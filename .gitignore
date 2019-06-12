@@ -1,0 +1,11 @@
+*.o
+checkCheckState
+checkState
+checkcsa
+findDropBaby
+findZugZwang
+longestWin
+makeAllState
+makeCheckmate
+makeWinLose
+maxbf

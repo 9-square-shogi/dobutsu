@@ -1,34 +1,30 @@
 /**
- * csa╖┴╝░д╬╚╫╠╠е╒ебедеыдЄ╞╔д▀╣■дєд╟д╜д╬╕хд╬╜к╢╔д▐д╟д╬╞╔д▀╢┌дЄ╔╜╝ид╣ды
+ * csaх╜вх╝ПуБочЫдщЭвуГХуВбуВдуГлуВТшкнуБ┐ш╛╝уВУуБзуБЭуБох╛МуБоч╡Вх▒АуБ╛уБзуБошкнуБ┐чнЛуВТшбичд║уБЩуВЛ
  */
-#include "dobutsu.h"
 #include "allStateTable.h"
+#include "dobutsu.h"
 #include "winLoseTable.h"
 #include <fstream>
 
-void usage()
-{
-  std::cerr << "Usage: checkcsa csafile" << std::endl;
-}
+void usage() { std::cerr << "Usage: checkcsa csafile" << std::endl; }
 
-int main(int ac,char **ag)
-{
+int main(int ac, char **ag) {
 #if 1
-  if(ac<2){
+  if (ac < 2) {
     usage();
   }
   std::ifstream ifs(ag[1]);
   std::string all;
   std::string line;
-  while( getline(ifs,line) ){
+  while (getline(ifs, line)) {
     all += line;
   }
   State s(all);
 #else
   State s;
 #endif
-  AllStateTable allS("allstates.dat");     
-  WinLoseTable winLose(allS,"winLoss.dat","winLossCount.dat");
-//   WinLoseTable winLose(allS,"winLossWoDrop.dat","winLossWoDropCount.dat");
+  AllStateTable allS("allstates.dat");
+  WinLoseTable winLose(allS, "winLoss.dat", "winLossCount.dat");
+  //   WinLoseTable winLose(allS,"winLossWoDrop.dat","winLossWoDropCount.dat");
   winLose.showSequence(s);
 }

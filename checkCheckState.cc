@@ -1,38 +1,35 @@
 /**
- * csa╖┴╝░д╬╚╫╠╠е╒ебедеыдЄ╞╔д▀╣■дєд╟
- * ╡═д▀д╬╗■д╦д╜д╬╕хд╬╜к╢╔д▐д╟д╬╞╔д▀╢┌дЄ╔╜╝ид╣ды
- * е╒ебедеыдЄ╗╪─ъд╖д╩дд╗■д╧║╟┬ч╝ъ┐Ї(23╝ъ)д╬╢╔╠╠д╬╞╔д▀╢┌дЄ╔╜╝ид╣дыбе
+ * csaх╜вх╝ПуБочЫдщЭвуГХуВбуВдуГлуВТшкнуБ┐ш╛╝уВУуБз
+ * шй░уБ┐уБоцЩВуБлуБЭуБох╛МуБоч╡Вх▒АуБ╛уБзуБошкнуБ┐чнЛуВТшбичд║уБЩуВЛ
+ * уГХуВбуВдуГлуВТцМЗхоЪуБЧуБкуБДцЩВуБпцЬАхдзцЙЛцХ░(23цЙЛ)уБох▒АщЭвуБошкнуБ┐чнЛуВТшбичд║уБЩуВЛя╝О
  */
-#include "dobutsu.h"
 #include "allStateTable.h"
+#include "dobutsu.h"
 #include "winLoseTable.h"
 #include <fstream>
 
-void usage()
-{
-  std::cerr << "Usage: checkCheckState csafile" << std::endl;
-}
+void usage() { std::cerr << "Usage: checkCheckState csafile" << std::endl; }
 
-int main(int ac,char **ag)
-{
-  if(ac<2){
-    AllStateTable allS("allstates.dat");     
-    WinLoseTable winLoseCheck(allS,"winLossCheck.dat","winLossCheckCount.dat");
-    for(size_t i=0;i<allS.size();i++){
-      if(winLoseCheck.getWinLoseCount(i)==23){
-	State s(allS[i],BLACK);
-	winLoseCheck.showSequence(s);
+int main(int ac, char **ag) {
+  if (ac < 2) {
+    AllStateTable allS("allstates.dat");
+    WinLoseTable winLoseCheck(allS, "winLossCheck.dat",
+                              "winLossCheckCount.dat");
+    for (size_t i = 0; i < allS.size(); i++) {
+      if (winLoseCheck.getWinLoseCount(i) == 23) {
+        State s(allS[i], BLACK);
+        winLoseCheck.showSequence(s);
       }
     }
   }
   std::ifstream ifs(ag[1]);
   std::string all;
   std::string line;
-  while( getline(ifs,line) ){
+  while (getline(ifs, line)) {
     all += line;
   }
   State s(all);
-  AllStateTable allS("allstates.dat");     
-  WinLoseTable winLoseCheck(allS,"winLossCheck.dat","winLossCheckCount.dat");
+  AllStateTable allS("allstates.dat");
+  WinLoseTable winLoseCheck(allS, "winLossCheck.dat", "winLossCheckCount.dat");
   winLoseCheck.showSequence(s);
 }

@@ -1,14 +1,13 @@
 #ifndef _DOBUTSU_H
 #define _DOBUTSU_H
-#include <cassert>
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <algorithm>
-#include <vector>
+#include <cassert>
 #include <complex>
 #include <deque>
+#include <fstream>
+#include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 typedef complex<int> Point;
 
@@ -22,438 +21,436 @@ typedef vector<int> vInt;
 // typedef map<uint64,int> sVals;
 
 /**
- * ¥Õ¥¡¥¤¥ëÆşÎÏÅù¤Ç¥Õ¥©¡¼¥Ş¥Ã¥È°Û¾ï¤òÈ¯¸«¤·¤¿»ş¤Ëthrow¤¹¤ëÎã³°
+ * ãƒ•ã‚¡ã‚¤ãƒ«å…¥åŠ›ç­‰ã§ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆç•°å¸¸ã‚’ç™ºè¦‹ã—ãŸæ™‚ã«throwã™ã‚‹ä¾‹å¤–
  */
-struct FormatException{
-};
+struct FormatException {};
 
 /**
- * ¶ÉÌÌÅù¤ÇÉÔÀ°¹ç¤¬¸«¤Ä¤«¤Ã¤¿»ş¤Ëthrow¤¹¤ëÎã³°
+ * å±€é¢ç­‰ã§ä¸æ•´åˆãŒè¦‹ã¤ã‹ã£ãŸæ™‚ã«throwã™ã‚‹ä¾‹å¤–
  */
-struct InconsistentException{
-};
+struct InconsistentException {};
 
 /**
- * ¥×¥ì¥¤¥ä¡¼
- * °Ï¸ë¤Ë¤Ê¤é¤Ã¤ÆÀè¼êÈÖ¤òBLACK, ¸å¼êÈÖ¤òWHITE¤È¤¹¤ë¡¥
+ * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+ * å›²ç¢ã«ãªã‚‰ã£ã¦å…ˆæ‰‹ç•ªã‚’BLACK, å¾Œæ‰‹ç•ªã‚’WHITEã¨ã™ã‚‹ï¼
  */
-enum Player{
-  BLACK=1, WHITE=-1
-};
+enum Player { BLACK = 1, WHITE = -1 };
 /**
- * ¼êÈÖ¤ÎÈ¿Å¾
+ * æ‰‹ç•ªã®åè»¢
  */
-static inline Player alt(Player pl)
-{
+static inline Player alt(Player pl) {
   return static_cast<Player>(-static_cast<int>(pl));
 }
-static int makePtypeChar(char c0,char c1);
+static int makePtypeChar(char c0, char c1);
 /**
- * ¶ğ¤Î¼ïÎà¤Èplayer¤òÉ½¤¹À°¿ô¤ò´ÉÍı¤¹¤ë¤¿¤á¤Î¥¯¥é¥¹
- * ÂĞ±ş¤¹¤ë¥ª¥Ö¥¸¥§¥¯¥È¤Ï¤Ê¤¤
+ * é§’ã®ç¨®é¡ã¨playerã‚’è¡¨ã™æ•´æ•°ã‚’ç®¡ç†ã™ã‚‹ãŸã‚ã®ã‚¯ãƒ©ã‚¹
+ * å¯¾å¿œã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¯ãªã„
  */
-struct Ptype{
+struct Ptype {
   enum {
-    EMPTY=0,
-    BABY=1,
-    ELEPHANT=2,
-    GIRAFFE=3,
-    CHICKEN=4,
-    LION=5,
+    EMPTY = 0,
+    BABY = 1,
+    ELEPHANT = 2,
+    GIRAFFE = 3,
+    CHICKEN = 4,
+    LION = 5,
   };
   /**
-   * ptype¤¬Éé¤Î»ş¤ÏWHITE¤Î¶ğ¤òÉ½¤¹
+   * ptypeãŒè² ã®æ™‚ã¯WHITEã®é§’ã‚’è¡¨ã™
    */
-  static int makePtype(Player p,int type){
-    return p*type;
-  }
+  static int makePtype(Player p, int type) { return p * type; }
   /**
-   * Ê¸»úÎó s ¤ÎindexÊ¸»úÌÜ¤«¤é¤Î3Ê¸»ú¤ò¸«¤Æptype¤òÊÖ¤¹
+   * æ–‡å­—åˆ— s ã®indexæ–‡å­—ç›®ã‹ã‚‰ã®3æ–‡å­—ã‚’è¦‹ã¦ptypeã‚’è¿”ã™
    */
-  static int makePtype(string const& s,int index);
+  static int makePtype(string const &s, int index);
   /**
-   * 2Ê¸»ú¤Î¶ğ¥·¥ó¥Ü¥ë
+   * 2æ–‡å­—ã®é§’ã‚·ãƒ³ãƒœãƒ«
    * HI, ZO, KI, NI, LI
-   * ¤È¤ÎÂĞ±ş
+   * ã¨ã®å¯¾å¿œ
    */
   static const char *strs[];
-  static string str(int type){
-    if(type==EMPTY) return " . ";
-    string pstr="+";
-    if(type<0){
-      pstr="-";
-      type= -type;
+  static string str(int type) {
+    if (type == EMPTY)
+      return " . ";
+    string pstr = "+";
+    if (type < 0) {
+      pstr = "-";
+      type = -type;
     }
-    if(type>=6)
+    if (type >= 6)
       throw InconsistentException();
-    return pstr+strs[type];
+    return pstr + strs[type];
   }
 };
 /**
- * 2Ê¸»ú¤Îchar¤«¤é¶ğ¤Îtype¤òºî¤ë
+ * 2æ–‡å­—ã®charã‹ã‚‰é§’ã®typeã‚’ä½œã‚‹
  */
-static inline int makePtypeChar(char c0,char c1)
-{
-  for(int i=1;i<=5;i++)
-    if(c0==Ptype::strs[i][0] && c1==Ptype::strs[i][1]) return i;
+static inline int makePtypeChar(char c0, char c1) {
+  for (int i = 1; i <= 5; i++)
+    if (c0 == Ptype::strs[i][0] && c1 == Ptype::strs[i][1])
+      return i;
   std::cerr << "c0=" << c0 << ",c1=" << c1 << std::endl;
   throw FormatException();
   return -1;
 }
 
 /**
- * Ê¸»úÎó s ¤ÎindexÊ¸»úÌÜ¤«¤é¤Î3Ê¸»ú¤ò¸«¤Æptype¤òÊÖ¤¹
+ * æ–‡å­—åˆ— s ã®indexæ–‡å­—ç›®ã‹ã‚‰ã®3æ–‡å­—ã‚’è¦‹ã¦ptypeã‚’è¿”ã™
  */
-inline int Ptype::makePtype(string const& s,int index){
-  if(index+3>s.length()) throw FormatException();
-  if(s[index+1]=='.'){
-    if(s[index]==' ' && s[index+2]==' ')
+inline int Ptype::makePtype(string const &s, int index) {
+  if (index + 3 > s.length())
+    throw FormatException();
+  if (s[index + 1] == '.') {
+    if (s[index] == ' ' && s[index + 2] == ' ')
       return Ptype::EMPTY;
     throw FormatException();
   }
   Player pl;
-  if(s[index]=='+') pl=BLACK;
-  else{
-    if(s[index]!='-') throw FormatException();
-    pl=WHITE;
+  if (s[index] == '+')
+    pl = BLACK;
+  else {
+    if (s[index] != '-')
+      throw FormatException();
+    pl = WHITE;
   }
-  int ptype=makePtypeChar(s[index+1],s[index+2]);
-  return makePtype(pl,ptype);
+  int ptype = makePtypeChar(s[index + 1], s[index + 2]);
+  return makePtype(pl, ptype);
 }
 
 /**
- * 8¶áËµ¤Î¥Ù¥¯¥È¥ë
+ * 8è¿‘å‚ã®ãƒ™ã‚¯ãƒˆãƒ«
  */
 extern const Point directions[8];
 /**
- * ¶ğ¤´¤È¤Ë¤É¤ÎÊı¸ş¤ËÆ°¤±¤ë¤«¤òµ­Ï¿¤·¤¿¤â¤Î
+ * é§’ã”ã¨ã«ã©ã®æ–¹å‘ã«å‹•ã‘ã‚‹ã‹ã‚’è¨˜éŒ²ã—ãŸã‚‚ã®
  */
 extern const int canMoves[5];
 
 /**
- * È×ÌÌ¤Îx,y¤«¤é1¼¡¸µ¤ÎPosition¤òºî¤ë
- * ¤³¤³¤Îx,y ¤Ï¾­´ıÎ®¤Ç
+ * ç›¤é¢ã®x,yã‹ã‚‰1æ¬¡å…ƒã®Positionã‚’ä½œã‚‹
+ * ã“ã“ã®x,y ã¯å°†æ£‹æµã§
  * (2,0) (1,0) (0,0)
  * (2,1) (1,1) (0,1)
  * (2,2) (1,2) (0,2)
  * (2,3) (1,3) (0,3)
- * ¤È¤Ê¤Ã¤Æ¤¤¤ë¤¬¤Ê¤¼¤«¤ÏÊ¹¤«¤Ê¤¤¤Ç
+ * ã¨ãªã£ã¦ã„ã‚‹ãŒãªãœã‹ã¯èã‹ãªã„ã§
  */
-static inline int makePosition(int x, int y)
-{
-  assert(0<=x && x<3);
-  assert(0<=y && y<4);
-  return x*4+y;
+static inline int makePosition(int x, int y) {
+  assert(0 <= x && x < 3);
+  assert(0 <= y && y < 4);
+  return x * 4 + y;
 }
 /**
- * ¶ğÂæ¤òÉ½¤¹Position
+ * é§’å°ã‚’è¡¨ã™Position
  */
 extern const int STAND;
 /**
- * Position¤«¤éx¤ò¼è¤ê½Ğ¤¹
+ * Positionã‹ã‚‰xã‚’å–ã‚Šå‡ºã™
  */
-static inline int pos2X(int pos)
-{
-  assert(0<=pos && pos<12);
-  return pos/4;
+static inline int pos2X(int pos) {
+  assert(0 <= pos && pos < 12);
+  return pos / 4;
 }
 /**
- * Position¤«¤éy¤ò¼è¤ê½Ğ¤¹
+ * Positionã‹ã‚‰yã‚’å–ã‚Šå‡ºã™
  */
-static inline int pos2Y(int pos)
-{
-  assert(0<=pos && pos<12);
-  return pos%4;
+static inline int pos2Y(int pos) {
+  assert(0 <= pos && pos < 12);
+  return pos % 4;
 }
 /**
- * Position¤ò180ÅÙ²óÅ¾¤¹¤ë
+ * Positionã‚’180åº¦å›è»¢ã™ã‚‹
  * (2-x)*4+(3-y)=8+3-(x*4+y)=11-pos
  */
-static inline int rot180(int pos)
-{
-  assert(0<=pos && pos<12);
-  return 11-pos;
+static inline int rot180(int pos) {
+  assert(0 <= pos && pos < 12);
+  return 11 - pos;
 }
 /**
- * Ê¸»ú2Ê¸»ú¤«¤éposition¤òºî¤ë
- * '0' '0' ¤ÏSTAND¤òÉ½¤¹¤³¤È¤Ë¤¹¤ë
+ * æ–‡å­—2æ–‡å­—ã‹ã‚‰positionã‚’ä½œã‚‹
+ * '0' '0' ã¯STANDã‚’è¡¨ã™ã“ã¨ã«ã™ã‚‹
  */
-static inline int makePosition(char c1,char c2)
-{
-  if(c1=='0' && c2=='0') return STAND;
-  if('A'<= c1 && c1<='C'){
-    int x=2-(c1-'A');
-    if('1'<= c2 && c2<='4'){
-      int y=c2-'1';
-      return x*4+y;
+static inline int makePosition(char c1, char c2) {
+  if (c1 == '0' && c2 == '0')
+    return STAND;
+  if ('A' <= c1 && c1 <= 'C') {
+    int x = 2 - (c1 - 'A');
+    if ('1' <= c2 && c2 <= '4') {
+      int y = c2 - '1';
+      return x * 4 + y;
     }
   }
   throw FormatException();
 }
 /**
- * »Ø¤·¼ê¤òÉ½¤¹¥¯¥é¥¹
- * ¼êÈÖ¤âÆş¤ë¡¥
+ * æŒ‡ã—æ‰‹ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹
+ * æ‰‹ç•ªã‚‚å…¥ã‚‹ï¼
  */
-struct Move{
+struct Move {
   // bit 0-7 to
   // bit 8-15 from if stand 0ff
-  // bit 16-19 ptype - move¸å¤Îptype
+  // bit 16-19 ptype - moveå¾Œã®ptype
   // bit 31 - if player is black 0 else 1
   int v;
-  Move(string const& str);
-  static int makeMove(Player pl,int from, int to, int ptype)
-  {
-    assert(pl==BLACK || pl==WHITE);
-    assert(0<=ptype && ptype<16);
-    assert((0<=from && from<12)||from==255);
-    assert(0<=to && to<12);
-    return (pl==BLACK ? 0 : (1<<31)) | (ptype<<16) | (from<<8) | to;
+  Move(string const &str);
+  static int makeMove(Player pl, int from, int to, int ptype) {
+    assert(pl == BLACK || pl == WHITE);
+    assert(0 <= ptype && ptype < 16);
+    assert((0 <= from && from < 12) || from == 255);
+    assert(0 <= to && to < 12);
+    return (pl == BLACK ? 0 : (1 << 31)) | (ptype << 16) | (from << 8) | to;
   }
-  Move(Player pl,int from, int to, int ptype)
-  {
-    v=makeMove(pl,from,to,ptype);
+  Move(Player pl, int from, int to, int ptype) {
+    v = makeMove(pl, from, to, ptype);
   }
-  int from() const{ return (v>>8)&255; }
-  int to() const{ return v&255; }
-  Player player() const{ return ((v&(1<<31))!=0 ? WHITE : BLACK); }
-  int ptype() const { return (v>>16)&255; }
-  Move rotateChangeTurn() const
-  {
-    if(from()==STAND)
-      return Move(alt(player()),STAND,rot180(to()),ptype());
+  int from() const { return (v >> 8) & 255; }
+  int to() const { return v & 255; }
+  Player player() const { return ((v & (1 << 31)) != 0 ? WHITE : BLACK); }
+  int ptype() const { return (v >> 16) & 255; }
+  Move rotateChangeTurn() const {
+    if (from() == STAND)
+      return Move(alt(player()), STAND, rot180(to()), ptype());
     else
-      return Move(alt(player()),rot180(from()),rot180(to()),ptype());
+      return Move(alt(player()), rot180(from()), rot180(to()), ptype());
   }
 };
-bool operator==(Move const &m1, Move const& m2);
+bool operator==(Move const &m1, Move const &m2);
 typedef vector<Move> vMove;
-vMove readMoveFile(string const& fileName);
-ostream& operator<<(ostream& os,Move const& m);
+vMove readMoveFile(string const &fileName);
+ostream &operator<<(ostream &os, Move const &m);
 /**
- * ¶ÉÌÌ¤òÉ½¤¹¥¯¥é¥¹
+ * å±€é¢ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹
  */
-struct State{
+struct State {
   /**
-   * È×ÌÌ¤Î12¥Ş¥¹¤ËÆş¤ëptype
+   * ç›¤é¢ã®12ãƒã‚¹ã«å…¥ã‚‹ptype
    */
-  char board[3*4];
+  char board[3 * 4];
   /**
-   * ¤½¤ì¤¾¤ì¤Î¥×¥ì¥¤¥ä¡¼¤Î¶ğÂæ¤Î¶ğ¤Î¸Ä¿ô
+   * ãã‚Œãã‚Œã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®é§’å°ã®é§’ã®å€‹æ•°
    * 2 * 3
    */
   int stands[6];
   /**
-   * ¼¡¤Î¼êÈÖ¤Î¥×¥ì¥¤¥ä¡¼(BLACK or WHITE)
+   * æ¬¡ã®æ‰‹ç•ªã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼(BLACK or WHITE)
    */
   int turn;
   /**
-   * ½é´üÇÛÃÖ¤òºî¤ë
+   * åˆæœŸé…ç½®ã‚’ä½œã‚‹
    */
-  State(){
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++)
-	board[x*4+y]=Ptype::EMPTY;
-    board[0*4+0]=(char)Ptype::makePtype(WHITE,Ptype::ELEPHANT);
-    board[1*4+0]=(char)Ptype::makePtype(WHITE,Ptype::LION);
-    board[2*4+0]=(char)Ptype::makePtype(WHITE,Ptype::GIRAFFE);
-    board[1*4+1]=(char)Ptype::makePtype(WHITE,Ptype::BABY);
-    board[1*4+2]=(char)Ptype::makePtype(BLACK,Ptype::BABY);
-    board[0*4+3]=(char)Ptype::makePtype(BLACK,Ptype::GIRAFFE);
-    board[1*4+3]=(char)Ptype::makePtype(BLACK,Ptype::LION);
-    board[2*4+3]=(char)Ptype::makePtype(BLACK,Ptype::ELEPHANT);
-    for(int i=0;i<6;i++) stands[i]=0;
-    turn=BLACK;
+  State() {
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++)
+        board[x * 4 + y] = Ptype::EMPTY;
+    board[0 * 4 + 0] = (char)Ptype::makePtype(WHITE, Ptype::ELEPHANT);
+    board[1 * 4 + 0] = (char)Ptype::makePtype(WHITE, Ptype::LION);
+    board[2 * 4 + 0] = (char)Ptype::makePtype(WHITE, Ptype::GIRAFFE);
+    board[1 * 4 + 1] = (char)Ptype::makePtype(WHITE, Ptype::BABY);
+    board[1 * 4 + 2] = (char)Ptype::makePtype(BLACK, Ptype::BABY);
+    board[0 * 4 + 3] = (char)Ptype::makePtype(BLACK, Ptype::GIRAFFE);
+    board[1 * 4 + 3] = (char)Ptype::makePtype(BLACK, Ptype::LION);
+    board[2 * 4 + 3] = (char)Ptype::makePtype(BLACK, Ptype::ELEPHANT);
+    for (int i = 0; i < 6; i++)
+      stands[i] = 0;
+    turn = BLACK;
   }
   /**
-   * pack¤·¤¿¾õÂÖ¤«¤éplayer¤ò»ØÄê¤·¤Æºî¤ë
+   * packã—ãŸçŠ¶æ…‹ã‹ã‚‰playerã‚’æŒ‡å®šã—ã¦ä½œã‚‹
    */
-  State(uint64 p,Player pl=BLACK)
-  {
-    if(pl==BLACK) *this=makeBlackFromUint64(p);
-    else *this=makeBlackFromUint64(p).rotateChangeTurn();
+  State(uint64 p, Player pl = BLACK) {
+    if (pl == BLACK)
+      *this = makeBlackFromUint64(p);
+    else
+      *this = makeBlackFromUint64(p).rotateChangeTurn();
   }
   /**
-   * CSAÉ÷¤ÎÉ½µ­¤«¤éºî¤ë
+   * CSAé¢¨ã®è¡¨è¨˜ã‹ã‚‰ä½œã‚‹
    */
-  State(string const& s);
+  State(string const &s);
   /**
-   * pack¤·¤¿¾õÂÖ¤«¤é¹õÈÖ¤Çºî¤ë
-   * bit 59 - 48 : 48+2*j¥Ó¥Ã¥È¤«¤é¤Î2¥Ó¥Ã¥È¤Å¤Ä¤Ç stands[j]¤òÉ½¤¹
-   * bit 47 - 0  : 4*pos¥Ó¥Ã¥È¤«¤é¤Î4¥Ó¥Ã¥È¤º¤Ä¤Ç board[pos] ¤òÉ½¤¹
-   *             : ptype¤Î²¼°Ì4¥Ó¥Ã¥È¤Ê¤Î¤Çbit3¤¬set¤µ¤ì¤Æ¤¤¤ë»ş¤Ï¡¤
-   *             : WHITEÍÑ¤ËÊäÀµ
+   * packã—ãŸçŠ¶æ…‹ã‹ã‚‰é»’ç•ªã§ä½œã‚‹
+   * bit 59 - 48 : 48+2*jãƒ“ãƒƒãƒˆã‹ã‚‰ã®2ãƒ“ãƒƒãƒˆã¥ã¤ã§ stands[j]ã‚’è¡¨ã™
+   * bit 47 - 0  : 4*posãƒ“ãƒƒãƒˆã‹ã‚‰ã®4ãƒ“ãƒƒãƒˆãšã¤ã§ board[pos] ã‚’è¡¨ã™
+   *             : ptypeã®ä¸‹ä½4ãƒ“ãƒƒãƒˆãªã®ã§bit3ãŒsetã•ã‚Œã¦ã„ã‚‹æ™‚ã¯ï¼Œ
+   *             : WHITEç”¨ã«è£œæ­£
    */
-  static State makeBlackFromUint64(uint64 p){
+  static State makeBlackFromUint64(uint64 p) {
     State s;
-    int i=0;
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++){
-	char c=(p>>(i*4))&15;
-	if((c&8)!=0) c-=16;
-	s.board[x*4+y]=c;
-	i++;
+    int i = 0;
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++) {
+        char c = (p >> (i * 4)) & 15;
+        if ((c & 8) != 0)
+          c -= 16;
+        s.board[x * 4 + y] = c;
+        i++;
       }
-    for(int j=0;j<6;j++){
-      s.stands[j]=(p>>(48+j*2))&3;
+    for (int j = 0; j < 6; j++) {
+      s.stands[j] = (p >> (48 + j * 2)) & 3;
     }
-    s.turn=BLACK;
+    s.turn = BLACK;
     return s;
   }
   /**
-   * È×ÌÌ¤ò180ÅÙ²óÅ¾¤·¤Æturn¤òÈ¿Å¾¤·¤¿State¤òºî¤ë
+   * ç›¤é¢ã‚’180åº¦å›è»¢ã—ã¦turnã‚’åè»¢ã—ãŸStateã‚’ä½œã‚‹
    */
-  State rotateChangeTurn() const
-  {
+  State rotateChangeTurn() const {
     State ret;
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++)
-	ret.board[x*4+y]= -board[(2-x)*4+3-y];
-    for(int i=0;i<3;i++){
-      ret.stands[i+3]=stands[i]; 
-      ret.stands[i]=stands[i+3]; 
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++)
+        ret.board[x * 4 + y] = -board[(2 - x) * 4 + 3 - y];
+    for (int i = 0; i < 3; i++) {
+      ret.stands[i + 3] = stands[i];
+      ret.stands[i] = stands[i + 3];
     }
-    ret.turn= -turn;
+    ret.turn = -turn;
     return ret;
   }
   /**
-   * turn¤òÈ¿Å¾
+   * turnã‚’åè»¢
    */
-  void changeTurn()
-  {
-    turn = -turn;
-  }
+  void changeTurn() { turn = -turn; }
   /**
-   * º¸±¦¤òÈ¿Å¾¤·¤¿State¤òºî¤ë
+   * å·¦å³ã‚’åè»¢ã—ãŸStateã‚’ä½œã‚‹
    */
-  State flip() const
-  {
+  State flip() const {
     State ret(*this);
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++)
-	ret.board[x*4+y]= board[(2-x)*4+y];
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++)
+        ret.board[x * 4 + y] = board[(2 - x) * 4 + y];
     return ret;
   }
   /**
-   * ¹õÈÖ¤ÎÈ×ÌÌ¤ò64¥Ó¥Ã¥ÈÀ°¿ô¤ËÊÑ´¹
+   * é»’ç•ªã®ç›¤é¢ã‚’64ãƒ“ãƒƒãƒˆæ•´æ•°ã«å¤‰æ›
    */
-  uint64 pack() const
-  {
-    assert(turn==BLACK);
-    uint64 ret=0ull;
-    int i=0;
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++){
-	ret|=static_cast<uint64>(board[x*4+y]&15)<<(i*4);
-	i++;
+  uint64 pack() const {
+    assert(turn == BLACK);
+    uint64 ret = 0ull;
+    int i = 0;
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++) {
+        ret |= static_cast<uint64>(board[x * 4 + y] & 15) << (i * 4);
+        i++;
       }
-    for(int j=0;j<6;j++)
-      ret|=static_cast<uint64>(stands[j])<<(48+j*2);
+    for (int j = 0; j < 6; j++)
+      ret |= static_cast<uint64>(stands[j]) << (48 + j * 2);
     return ret;
   }
   /**
-   * ¹õÈÖ¤ËÀµµ¬²½¤·¤¿¾å¤Ç64¥Ó¥Ã¥ÈÀ°¿ô¤ËÊÑ´¹¤·¡¤flip¤·¤¿¤â¤Î¤È¾®¤µ¤¤Êı¤òÊÖ¤¹
+   * é»’ç•ªã«æ­£è¦åŒ–ã—ãŸä¸Šã§64ãƒ“ãƒƒãƒˆæ•´æ•°ã«å¤‰æ›ã—ï¼Œflipã—ãŸã‚‚ã®ã¨å°ã•ã„æ–¹ã‚’è¿”ã™
    */
-  uint64 normalize() const{
-    if(turn==BLACK){
-      uint64 u1=pack();
-      uint64 u2=flip().pack();
-      return std::min(u1,u2);
-    }
-    else{
-      State news=rotateChangeTurn();
-      uint64 u1=news.pack();
-      uint64 u2=news.flip().pack();
-      return std::min(u1,u2);
+  uint64 normalize() const {
+    if (turn == BLACK) {
+      uint64 u1 = pack();
+      uint64 u2 = flip().pack();
+      return std::min(u1, u2);
+    } else {
+      State news = rotateChangeTurn();
+      uint64 u1 = news.pack();
+      uint64 u2 = news.flip().pack();
+      return std::min(u1, u2);
     }
   }
   /**
-   * »ØÄê¤µ¤ì¤¿Player¤Îlion¤òÁÜ¤¹
+   * æŒ‡å®šã•ã‚ŒãŸPlayerã®lionã‚’æœã™
    */
-  Point lion(Player p) const{
-    char pLion=Ptype::makePtype(p,Ptype::LION);
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++)
-	if(pLion==board[x*4+y]) return Point(x,y);
+  Point lion(Player p) const {
+    char pLion = Ptype::makePtype(p, Ptype::LION);
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++)
+        if (pLion == board[x * 4 + y])
+          return Point(x, y);
     std::cerr << *this << std::endl;
     std::cerr << "no lion" << std::endl;
     throw InconsistentException();
-    return Point(0,0);
+    return Point(0, 0);
   }
   /**
-   * Point p¤¬È×ÌÌ¤ÎÆâÉô¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
+   * Point pãŒç›¤é¢ã®å†…éƒ¨ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
    */
-  static bool isInside(Point p){
-    return 0<=p.real() && p.real()<=2 && 0<=p.imag() && p.imag()<=3;
+  static bool isInside(Point p) {
+    return 0 <= p.real() && p.real() <= 2 && 0 <= p.imag() && p.imag() <= 3;
   }
   /**
-   * ¹õÈÖ¤Îptype¤¬dirÊı¸ş¤ËÆ°¤±¤ë¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
+   * é»’ç•ªã®ptypeãŒdiræ–¹å‘ã«å‹•ã‘ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
    */
-  static bool canMove(char ptype,int dir){
-    return ((1<<dir)&canMoves[ptype-Ptype::BABY])!=0;
+  static bool canMove(char ptype, int dir) {
+    return ((1 << dir) & canMoves[ptype - Ptype::BABY]) != 0;
   }
   /**
-   * ¹õÈÖ¤ÎÈ×ÌÌ¤¬¼êÈÖ¤Î¾¡¤Á¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
+   * é»’ç•ªã®ç›¤é¢ãŒæ‰‹ç•ªã®å‹ã¡ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
    */
-  bool isWinByBlack() const{
-    assert(turn==BLACK);
+  bool isWinByBlack() const {
+    assert(turn == BLACK);
     // can capture the opponent's lion
-    Point pLion=lion(WHITE);
+    Point pLion = lion(WHITE);
     //    std::cout << "pLion=" << pLion << std::endl;
-    for(int dir=0;dir<8;dir++){
-      Point pos=pLion-directions[dir];
-      if(!isInside(pos)) continue;
-      char ptype=board[pos.real()*4+pos.imag()];
-      //      std::cout << "dir=" << dir << ",pos=" << pos << ",ptype=" << ptype << std::endl;
-      if(ptype>0 && canMove(ptype,dir))
-	return true;
+    for (int dir = 0; dir < 8; dir++) {
+      Point pos = pLion - directions[dir];
+      if (!isInside(pos))
+        continue;
+      char ptype = board[pos.real() * 4 + pos.imag()];
+      //      std::cout << "dir=" << dir << ",pos=" << pos << ",ptype=" << ptype
+      //      << std::endl;
+      if (ptype > 0 && canMove(ptype, dir))
+        return true;
     }
     return false;
   }
   /**
-   * È×ÌÌ¤¬¼êÈÖ¤Î¾¡¤Á¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
+   * ç›¤é¢ãŒæ‰‹ç•ªã®å‹ã¡ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
    */
-  bool isWin() const{
-    if(turn==BLACK) return isWinByBlack();
+  bool isWin() const {
+    if (turn == BLACK)
+      return isWinByBlack();
     return rotateChangeTurn().isWinByBlack();
   }
   /**
-   * ¹õÈÖ¤ÎÈ×ÌÌ¤¬¼êÈÖ¤ÎÉé¤±¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
-   * isWin¤Ç¤Ê¤¤¤³¤È¤Ï¥Á¥§¥Ã¥¯ºÑ¤ß¤È¤¹¤ë
+   * é»’ç•ªã®ç›¤é¢ãŒæ‰‹ç•ªã®è² ã‘ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
+   * isWinã§ãªã„ã“ã¨ã¯ãƒã‚§ãƒƒã‚¯æ¸ˆã¿ã¨ã™ã‚‹
    */
-  bool isLoseByBlack() const{
-    assert(turn==BLACK);
+  bool isLoseByBlack() const {
+    assert(turn == BLACK);
     assert(!isWin());
     // can capture the opponent's lion
-    Point pLion=lion(WHITE);
+    Point pLion = lion(WHITE);
     return pLion.imag() == 3;
   }
   /**
-   * È×ÌÌ¤¬¼êÈÖ¤ÎÉé¤±¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë
-   * isWin¤Ç¤Ê¤¤¤³¤È¤Ï¥Á¥§¥Ã¥¯ºÑ¤ß¤È¤¹¤ë
+   * ç›¤é¢ãŒæ‰‹ç•ªã®è² ã‘ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
+   * isWinã§ãªã„ã“ã¨ã¯ãƒã‚§ãƒƒã‚¯æ¸ˆã¿ã¨ã™ã‚‹
    */
-  bool isLose() const{
-    if(turn==BLACK) return isLoseByBlack();
+  bool isLose() const {
+    if (turn == BLACK)
+      return isLoseByBlack();
     return rotateChangeTurn().isLoseByBlack();
   }
   /**
-   * ¶ğ¤Î¿ô¤¬¤¢¤Ã¤Æ¤¤¤ë¤³¤È¤ò³ÎÇ§¤¹¤ë
+   * é§’ã®æ•°ãŒã‚ã£ã¦ã„ã‚‹ã“ã¨ã‚’ç¢ºèªã™ã‚‹
    */
-  bool isConsistent() const{
-    vInt counts(6,0);
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++){
-	char ptype=board[x*4+y];
-	if(ptype<0) ptype= -ptype;
-	if(ptype==Ptype::CHICKEN) ptype=Ptype::BABY;
-	if(ptype>0) counts[ptype]++;
+  bool isConsistent() const {
+    vInt counts(6, 0);
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++) {
+        char ptype = board[x * 4 + y];
+        if (ptype < 0)
+          ptype = -ptype;
+        if (ptype == Ptype::CHICKEN)
+          ptype = Ptype::BABY;
+        if (ptype > 0)
+          counts[ptype]++;
       }
-    if(counts[Ptype::LION]!=2) return false;
-    if(counts[Ptype::BABY]>=0 && stands[0]>=0 && stands[3]>=0 &&
-       counts[Ptype::BABY]+stands[0]+stands[3]!=2) return false;
-    if(counts[Ptype::ELEPHANT]>=0 && stands[1]>=0 && stands[4]>=0 &&
-       counts[Ptype::ELEPHANT]+stands[1]+stands[4]!=2) return false;
-    if(counts[Ptype::GIRAFFE]>=0 && stands[2]>=0 && stands[5]>=0 &&
-       counts[Ptype::GIRAFFE]+stands[2]+stands[5]!=2) return false;
+    if (counts[Ptype::LION] != 2)
+      return false;
+    if (counts[Ptype::BABY] >= 0 && stands[0] >= 0 && stands[3] >= 0 &&
+        counts[Ptype::BABY] + stands[0] + stands[3] != 2)
+      return false;
+    if (counts[Ptype::ELEPHANT] >= 0 && stands[1] >= 0 && stands[4] >= 0 &&
+        counts[Ptype::ELEPHANT] + stands[1] + stands[4] != 2)
+      return false;
+    if (counts[Ptype::GIRAFFE] >= 0 && stands[2] >= 0 && stands[5] >= 0 &&
+        counts[Ptype::GIRAFFE] + stands[2] + stands[5] != 2)
+      return false;
     return true;
   }
 #if 0
@@ -501,10 +498,10 @@ struct State{
     return ret;
   }
 #else
-  vUint64 nextStates() const{
-    vMove moves=nextMoves();
+  vUint64 nextStates() const {
+    vMove moves = nextMoves();
     vUint64 ret;
-    for(size_t i=0;i<moves.size();i++){
+    for (size_t i = 0; i < moves.size(); i++) {
       State news(*this);
       news.applyMove(moves[i]);
       ret.push_back(news.normalize());
@@ -513,135 +510,141 @@ struct State{
   }
 #endif
   /**
-   * ¹õÈÖ¤Îstate¤Ç¹çË¡¼ê¤ò¤¹¤Ù¤Æºî¤ë
-   * isWin, isLose¤Ç¤Ï¸Æ¤Ğ¤Ê¤¤
+   * é»’ç•ªã®stateã§åˆæ³•æ‰‹ã‚’ã™ã¹ã¦ä½œã‚‹
+   * isWin, isLoseã§ã¯å‘¼ã°ãªã„
    */
-  vMove nextMovesForBlack() const{
-    assert(turn==BLACK);
+  vMove nextMovesForBlack() const {
+    assert(turn == BLACK);
     assert(!isWin());
     assert(!isLose());
     vMove ret;
-    for(int x=0;x<3;x++)
-      for(int y=0;y<4;y++){
-	Point pos(x,y);
-	char ptype=board[x*4+y];
-	if(ptype==0){
-	  for(int i=0;i<3;i++)
-	    if(stands[i]>0){
-	      ret.push_back(Move(BLACK,STAND,makePosition(x,y),i+Ptype::BABY));
-	    }
-	}
-	if(ptype<=0){
-	  for(int dir=0;dir<8;dir++){
-	    Point pos1=pos-directions[dir];
-	    if(!isInside(pos1)) continue;
-	    char ptype1=board[pos1.real()*4+pos1.imag()];
-	    if(ptype1>0 && canMove(ptype1,dir)){
-	      if(ptype1==Ptype::BABY && y==0) ptype1=Ptype::CHICKEN;
-	      ret.push_back(Move(BLACK,makePosition(pos1.real(),pos1.imag()),makePosition(x,y),ptype1));
-	    }
-	  }
-	}
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 4; y++) {
+        Point pos(x, y);
+        char ptype = board[x * 4 + y];
+        if (ptype == 0) {
+          for (int i = 0; i < 3; i++)
+            if (stands[i] > 0) {
+              ret.push_back(
+                  Move(BLACK, STAND, makePosition(x, y), i + Ptype::BABY));
+            }
+        }
+        if (ptype <= 0) {
+          for (int dir = 0; dir < 8; dir++) {
+            Point pos1 = pos - directions[dir];
+            if (!isInside(pos1))
+              continue;
+            char ptype1 = board[pos1.real() * 4 + pos1.imag()];
+            if (ptype1 > 0 && canMove(ptype1, dir)) {
+              if (ptype1 == Ptype::BABY && y == 0)
+                ptype1 = Ptype::CHICKEN;
+              ret.push_back(Move(BLACK, makePosition(pos1.real(), pos1.imag()),
+                                 makePosition(x, y), ptype1));
+            }
+          }
+        }
       }
     return ret;
   }
   /**
-   * state¤Ç¹çË¡¼ê¤ò¤¹¤Ù¤Æºî¤ë
-   * isWin, isLose¤Ç¤Ï¸Æ¤Ğ¤Ê¤¤
+   * stateã§åˆæ³•æ‰‹ã‚’ã™ã¹ã¦ä½œã‚‹
+   * isWin, isLoseã§ã¯å‘¼ã°ãªã„
    */
-  vMove nextMoves() const{
-    if(turn==BLACK) return nextMovesForBlack();
-    else{
-      State rev_s=rotateChangeTurn();
-      vMove rev=rev_s.nextMovesForBlack();
+  vMove nextMoves() const {
+    if (turn == BLACK)
+      return nextMovesForBlack();
+    else {
+      State rev_s = rotateChangeTurn();
+      vMove rev = rev_s.nextMovesForBlack();
       vMove ret;
-      for(size_t i=0;i<rev.size();i++)
-	ret.push_back(rev[i].rotateChangeTurn());
+      for (size_t i = 0; i < rev.size(); i++)
+        ret.push_back(rev[i].rotateChangeTurn());
       return ret;
     }
   }
   /**
-   * move¤¬¤¢¤ëstate¤Çvalid¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë¡¥
-   * generate¤·¤Æ¤«¤é¤½¤Î¥á¥ó¥Ğ¡¼¤Ç¤¢¤ë¤³¤È¤ÇÈ½Äê¤¹¤ë¤È¤¤¤¦
-   * ÃÙ¤¤ÊıË¡
+   * moveãŒã‚ã‚‹stateã§validã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹ï¼
+   * generateã—ã¦ã‹ã‚‰ãã®ãƒ¡ãƒ³ãƒãƒ¼ã§ã‚ã‚‹ã“ã¨ã§åˆ¤å®šã™ã‚‹ã¨ã„ã†
+   * é…ã„æ–¹æ³•
    */
-  bool isValidWithGenerate(Move const& move) const
-  {
-    vMove ret=nextMoves();
-    for(size_t i=0;i<ret.size();i++)
-      if(ret[i]==move) return true;
+  bool isValidWithGenerate(Move const &move) const {
+    vMove ret = nextMoves();
+    for (size_t i = 0; i < ret.size(); i++)
+      if (ret[i] == move)
+        return true;
     return false;
   }
   /**
-   * move¤¬state¤Çvalid¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë¡¥
-   * rule¤Ë¤è¤Ã¤Æ²ÄÇ½¤Ê¤³¤È¤òÁ°Äó¤Ë¤¹¤ë¡¡
+   * moveãŒstateã§validã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹ï¼
+   * ruleã«ã‚ˆã£ã¦å¯èƒ½ãªã“ã¨ã‚’å‰æã«ã™ã‚‹ã€€
    */
-  bool isValid(Move const& move) const
-  {
-    if(move.player() != turn) return false;
-    int ptype=move.ptype();
-    int capture_ptype=board[move.to()];
-    if(move.from()==STAND){
-      if(stands[(turn==BLACK ? 0 : 3)+ptype-Ptype::BABY]==0) 
-	return false;
-      return capture_ptype==Ptype::EMPTY;
-    }
-    else{
-      int from_ptype=board[move.from()];
-      if(turn==WHITE) from_ptype= -from_ptype;
-//      std::cerr << "from_ptype=" << from_ptype << std::endl;
-      if(from_ptype<=0) return false;
-      if(from_ptype != ptype){
-	if(ptype!=Ptype::CHICKEN || from_ptype!=Ptype::BABY ||
-	   pos2Y(move.from()) != (turn==BLACK ? 1 : 2))
-	  return false;
+  bool isValid(Move const &move) const {
+    if (move.player() != turn)
+      return false;
+    int ptype = move.ptype();
+    int capture_ptype = board[move.to()];
+    if (move.from() == STAND) {
+      if (stands[(turn == BLACK ? 0 : 3) + ptype - Ptype::BABY] == 0)
+        return false;
+      return capture_ptype == Ptype::EMPTY;
+    } else {
+      int from_ptype = board[move.from()];
+      if (turn == WHITE)
+        from_ptype = -from_ptype;
+      //      std::cerr << "from_ptype=" << from_ptype << std::endl;
+      if (from_ptype <= 0)
+        return false;
+      if (from_ptype != ptype) {
+        if (ptype != Ptype::CHICKEN || from_ptype != Ptype::BABY ||
+            pos2Y(move.from()) != (turn == BLACK ? 1 : 2))
+          return false;
       }
-      return (turn==BLACK ? capture_ptype<=0 : capture_ptype>=0);
+      return (turn == BLACK ? capture_ptype <= 0 : capture_ptype >= 0);
     }
   }
   /**
-   * State¤Ëmove¤òapply¤·¤ÆÊÑ²½¤µ¤»¤ë
+   * Stateã«moveã‚’applyã—ã¦å¤‰åŒ–ã•ã›ã‚‹
    */
-  void applyMove(Move const& move)
-  {
+  void applyMove(Move const &move) {
     assert(isValid(move));
     assert(isValidWithGenerate(move));
-    if(!isValid(move) || !isValidWithGenerate(move)){
+    if (!isValid(move) || !isValidWithGenerate(move)) {
       std::cerr << *this << std::endl;
       std::cerr << "invalidMove " << move << std::endl;
       throw InconsistentException();
     }
-    if(move.from()==STAND){
-      int index=(turn==BLACK ? 0 : 3)+move.ptype()-Ptype::BABY;
-      assert(0<=index && index<6);
-      stands[index]--;      
+    if (move.from() == STAND) {
+      int index = (turn == BLACK ? 0 : 3) + move.ptype() - Ptype::BABY;
+      assert(0 <= index && index < 6);
+      stands[index]--;
+    } else {
+      assert(move.ptype() == abs(board[move.from()]) ||
+             move.ptype() == Ptype::CHICKEN &&
+                 abs(board[move.from()]) == Ptype::BABY);
+      board[move.from()] = Ptype::EMPTY;
     }
-    else{
-      assert(move.ptype()==abs(board[move.from()]) ||
-	     move.ptype()==Ptype::CHICKEN && abs(board[move.from()])==Ptype::BABY);
-      board[move.from()]=Ptype::EMPTY;
-    }
-    int capture_ptype=board[move.to()];
-    int ptype=move.ptype();
-    if(turn==WHITE) 
-      ptype= -ptype;
+    int capture_ptype = board[move.to()];
+    int ptype = move.ptype();
+    if (turn == WHITE)
+      ptype = -ptype;
     else
-      capture_ptype= -capture_ptype;
-    assert(capture_ptype>=0);
-    board[move.to()]=ptype;
-    if(capture_ptype!=Ptype::EMPTY){
-      if(capture_ptype==Ptype::CHICKEN) capture_ptype=Ptype::BABY;
-      stands[(turn==BLACK ? 0 : 3)+capture_ptype-Ptype::BABY]++;
+      capture_ptype = -capture_ptype;
+    assert(capture_ptype >= 0);
+    board[move.to()] = ptype;
+    if (capture_ptype != Ptype::EMPTY) {
+      if (capture_ptype == Ptype::CHICKEN)
+        capture_ptype = Ptype::BABY;
+      stands[(turn == BLACK ? 0 : 3) + capture_ptype - Ptype::BABY]++;
     }
     changeTurn();
-    if(!isConsistent()){
+    if (!isConsistent()) {
       std::cerr << *this << std::endl;
       throw InconsistentException();
     }
   }
-  friend ostream& operator<<(ostream& os,State const& s);
-  friend bool operator==(State const& s1, State const& s2);
+  friend ostream &operator<<(ostream &os, State const &s);
+  friend bool operator==(State const &s1, State const &s2);
 };
-bool operator==(State const& s1, State const& s2);
-bool operator!=(State const& s1, State const& s2);
+bool operator==(State const &s1, State const &s2);
+bool operator!=(State const &s1, State const &s2);
 #endif

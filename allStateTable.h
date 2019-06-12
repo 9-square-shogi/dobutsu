@@ -8,27 +8,27 @@ class AllStateTable {
   vUint64 contents;
   size_t c_size;
   mutable ifstream ifs;
+
 public:
- AllStateTable(size_t size) : contents(size),c_size(size) {}
-  AllStateTable(string const& fileName,bool lazy=true);
+  AllStateTable(size_t size) : contents(size), c_size(size) {}
+  AllStateTable(string const &fileName, bool lazy = true);
   ~AllStateTable();
-  size_t size() const{ return c_size; }
+  size_t size() const { return c_size; }
   /**
-   * v¤¬¸«¤Ä¤«¤ì¤Ð0°Ê¾å¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹¤òÊÖ¤¹¡¥
-   * ¸«¤Ä¤«¤é¤Ê¤±¤ì¤Ð-1¤òÊÖ¤¹
+   * vãŒè¦‹ã¤ã‹ã‚Œã°0ä»¥ä¸Šã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’è¿”ã™ï¼Ž
+   * è¦‹ã¤ã‹ã‚‰ãªã‘ã‚Œã°-1ã‚’è¿”ã™
    */
   int find(uint64 v) const;
   /**
-   * read only ¤Îaccess¤Î¤ß¤ò¹Í¤¨¤ë¡¥
+   * read only ã®accessã®ã¿ã‚’è€ƒãˆã‚‹ï¼Ž
    */
-  const uint64 operator[](size_t i) const { 
-    if(contents.size()>0){
+  const uint64 operator[](size_t i) const {
+    if (contents.size() > 0) {
       return contents[i];
-    }
-    else{
-      ifs.seekg(i*sizeof(uint64),ios_base::beg);
+    } else {
+      ifs.seekg(i * sizeof(uint64), ios_base::beg);
       uint64 ret;
-      ifs.read((char *)&ret,sizeof(uint64));
+      ifs.read((char *)&ret, sizeof(uint64));
       return ret;
     }
   }

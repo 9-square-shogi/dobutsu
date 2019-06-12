@@ -1,44 +1,42 @@
 /**
- * csa·Á¼°¤Î´ıÉè¥Õ¥¡¥¤¥ë¤òÆÉ¤ß¹ş¤ó¤Ç¡¤¤½¤ì¤¾¤ì¤Î¼ê¤Î¾¡ÇÔ¤ò¥Á¥§¥Ã¥¯¤¹¤ë
+ * csaå½¢å¼ã®æ£‹è­œãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚“ã§ï¼Œãã‚Œãã‚Œã®æ‰‹ã®å‹æ•—ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
  */
-#include "dobutsu.h"
 #include "allStateTable.h"
+#include "dobutsu.h"
 #include "winLoseTable.h"
 
-void usage()
-{
-  std::cerr << "Usage: checkcsa csafile" << std::endl;
-}
+void usage() { std::cerr << "Usage: checkcsa csafile" << std::endl; }
 
-int main(int ac,char **ag)
-{
-  if(ac<2){
+int main(int ac, char **ag) {
+  if (ac < 2) {
     usage();
   }
-  vMove moves=readMoveFile(ag[1]);
-  AllStateTable allS("allstates.dat");     
-  WinLoseTable winLose(allS,"winLoss.dat","winLossCount.dat");
+  vMove moves = readMoveFile(ag[1]);
+  AllStateTable allS("allstates.dat");
+  WinLoseTable winLose(allS, "winLoss.dat", "winLossCount.dat");
   State s;
   std::cerr << s << std::endl;
-  for(size_t i=0;i<moves.size();i++){
-    vMove ret=s.nextMoves();
+  for (size_t i = 0; i < moves.size(); i++) {
+    vMove ret = s.nextMoves();
     int lastwlc;
-    int lastwl=winLose.getWinLose(s,lastwlc);
+    int lastwl = winLose.getWinLose(s, lastwlc);
 #if 1
-    for(size_t j=0;j<ret.size();j++){
-      int wlc,wl;
-      wl=winLose.getWinLose(s,ret[j],wlc);
-      std::cerr << j << " : " << ret[j] << ",wl=" << wl << "(" << wlc << ")"<< std::endl;
+    for (size_t j = 0; j < ret.size(); j++) {
+      int wlc, wl;
+      wl = winLose.getWinLose(s, ret[j], wlc);
+      std::cerr << j << " : " << ret[j] << ",wl=" << wl << "(" << wlc << ")"
+                << std::endl;
     }
 #endif
     std::cerr << "Move : " << moves[i] << std::endl;
-    int wlc,wl;
-    wl=winLose.getWinLose(s,moves[i],wlc);
-    if(lastwl!= -wl){
+    int wlc, wl;
+    wl = winLose.getWinLose(s, moves[i], wlc);
+    if (lastwl != -wl) {
       std::cerr << s << std::endl;
-      std::cerr << i << " : " << moves[i] << " " << -lastwl << " -> " << wl << std::endl;
+      std::cerr << i << " : " << moves[i] << " " << -lastwl << " -> " << wl
+                << std::endl;
     }
     s.applyMove(moves[i]);
-//    std::cerr << s << std::endl;
+    //    std::cerr << s << std::endl;
   }
 }

@@ -1,39 +1,42 @@
 /**
- * ¤Ò¤è¤³¤ò1ÃÊÌÜ¤Ëdrop¤¹¤ë¼ê¤¬Àµ²ò¤Ç¤¢¤ë¤è¤¦¤Ê¶ÉÌÌ¤òÁÜ¤·¤Æcount¤¹¤ë¡¥
+ * ã²ã‚ˆã“ã‚’1æ®µç›®ã«dropã™ã‚‹æ‰‹ãŒæ­£è§£ã§ã‚ã‚‹ã‚ˆã†ãªå±€é¢ã‚’æœã—ã¦countã™ã‚‹ï¼
  */
 
-#include "dobutsu.h"
 #include "allStateTable.h"
+#include "dobutsu.h"
 #include "winLoseTable.h"
 
-int main()
-{
-  AllStateTable allS("allstates.dat",false);     
-  WinLoseTable winLose(allS,"winLoss.dat","winLossCount.dat",false);
-  int dropcount=0;
-  for(size_t i=0;i<allS.size();i++){
-    if((i%100000)==0) std::cerr << i << std::endl;
-    if(winLose.getWinLose(i)== -1) continue; // Éé¤±¶ÉÌÌ¤Ë¤Ï¶½Ì£¤¬¤Ê¤¤
-    State s(allS[i],BLACK);
-    if(s.isWin() || s.isLose()) continue;
-    vMove moves=s.nextMoves();
-    int minv=1;
-    for(size_t j=0;j<moves.size();j++){
-      // ¤Ò¤è¤³¤Î1ÃÊÌÜ¤Îdrop
-      if(moves[j].ptype()==Ptype::BABY && moves[j].from()==STAND &&
-	 pos2Y(moves[j].to())==0) continue;
-      int wl,wlc;
-      wl=winLose.getWinLose(s,moves[j],wlc);
-      minv=std::min(wl,minv);
+int main() {
+  AllStateTable allS("allstates.dat", false);
+  WinLoseTable winLose(allS, "winLoss.dat", "winLossCount.dat", false);
+  int dropcount = 0;
+  for (size_t i = 0; i < allS.size(); i++) {
+    if ((i % 100000) == 0)
+      std::cerr << i << std::endl;
+    if (winLose.getWinLose(i) == -1)
+      continue; // è² ã‘å±€é¢ã«ã¯èˆˆå‘³ãŒãªã„
+    State s(allS[i], BLACK);
+    if (s.isWin() || s.isLose())
+      continue;
+    vMove moves = s.nextMoves();
+    int minv = 1;
+    for (size_t j = 0; j < moves.size(); j++) {
+      // ã²ã‚ˆã“ã®1æ®µç›®ã®drop
+      if (moves[j].ptype() == Ptype::BABY && moves[j].from() == STAND &&
+          pos2Y(moves[j].to()) == 0)
+        continue;
+      int wl, wlc;
+      wl = winLose.getWinLose(s, moves[j], wlc);
+      minv = std::min(wl, minv);
     }
-    if(-minv != winLose.getWinLose(i)){
+    if (-minv != winLose.getWinLose(i)) {
       dropcount++;
       std::cerr << "-------------\n";
       std::cerr << s << std::endl;
-      for(size_t j=0;j<moves.size();j++){
-	int wl,wlc;
-	wl=winLose.getWinLose(s,moves[j],wlc);
-	std::cerr << j << " : " << moves[j] << " " << wl << "(" << wlc << ")\n";
+      for (size_t j = 0; j < moves.size(); j++) {
+        int wl, wlc;
+        wl = winLose.getWinLose(s, moves[j], wlc);
+        std::cerr << j << " : " << moves[j] << " " << wl << "(" << wlc << ")\n";
       }
     }
   }
