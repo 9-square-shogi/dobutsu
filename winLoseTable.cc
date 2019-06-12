@@ -85,22 +85,17 @@ void WinLoseTable::showSequence(State const &s) const {
     throw InconsistentException();
   uint64 v = s.normalize();
   int index = allS.find(v);
+  if (getWinLoseCount(index) == 0 && getWinLose(index) == 0) {
+    vInt pastStates;
+    showDrawSequence(s, pastStates);
+    return;
+  }
   std::cerr << "------------------" << std::endl;
   std::cerr << s << std::endl;
   std::cerr << (int)(s.turn == BLACK ? getWinLose(index) : -getWinLose(index))
             << "(" << (int)getWinLoseCount(index) << ")" << std::endl;
-  if (getWinLoseCount(index) == 0) {
-    if (getWinLose(index) == 0) {
-      vMove moves = s.nextMoves();
-      for (size_t i = 0; i < moves.size(); i++) {
-        int wl, wlc;
-        wl = getWinLose(s, moves[i], wlc);
-        std::cerr << i << " : " << moves[i] << " " << wl << "(" << wlc << ")"
-                  << std::endl;
-      }
-    }
+  if (getWinLoseCount(index) == 0)
     return;
-  }
   if (getWinLose(index) == 0) {
     std::cerr << s << std::endl;
     std::cerr << "winLose=0" << std::endl;
@@ -149,4 +144,37 @@ void WinLoseTable::showSequence(State const &s) const {
       }
     }
   }
+}
+
+void WinLoseTable::showDrawSequence(State const &s, vInt &pastStates) const {
+  uint64 v = s.normalize();
+  int index = allS.find(v);
+  std::cerr << "------------------" << std::endl;
+  std::cerr << s << std::endl;
+  std::cerr << (int)(s.turn == BLACK ? getWinLose(index) : -getWinLose(index))
+            << "(" << (int)getWinLoseCount(index) << ")" << std::endl;
+  if (std::find(pastStates.begin(), pastStates.end(), index) !=
+      pastStates.end())
+    return;
+  pastStates.push_back(index);
+  vMove moves = s.nextMoves();
+  int draw_index = -1;
+  int draw_wl = -1;
+  int draw_wlc = -1;
+  for (size_t i = 0; i < moves.size(); i++) {
+    int wl, wlc;
+    wl = getWinLose(s, moves[i], wlc);
+    std::cerr << i << " : " << moves[i] << " " << wl << "(" << wlc << ")"
+              << std::endl;
+    if (wl == 0 && draw_index == -1) {
+      draw_index = i;
+      draw_wl = wl;
+      draw_wlc = wlc;
+    }
+  }
+  std::cerr << "Move : " << moves[draw_index] << " " << draw_wl << "("
+            << draw_wlc << ")" << std::endl;
+  State news(s);
+  news.applyMove(moves[draw_index]);
+  showDrawSequence(news, pastStates);
 }

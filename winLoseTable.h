@@ -37,5 +37,6 @@ public:
   int getWinLose(State const &s, int &wlc) const;
   int getWinLose(State const &s, Move const &m, int &wlc) const;
   void showSequence(State const &s) const;
+  void showDrawSequence(State const &s, vInt &pastStates) const;
 };
 #endif
