@@ -10,7 +10,7 @@ int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint64 v) {
     assert(0 <= i1 && i1 < allIS.size());
     if (winLoss[i1] == -1)
       return 1;
-    if (winLoss[i1] == 0)
+    if (winLoss[i1] != 1)
       alllose = false;
   }
   if (alllose)
@@ -124,8 +124,13 @@ int main() {
     } else if (s.isLose()) {
       winLoss[i] = -1;
       count[0]++;
-    } else
+    } else {
+#if STALEMATE_DRAW
+      if (s.isStalemate())
+        winLoss[i] = 2;
+#endif
       count[1]++;
+    }
   }
   for (int c = 1;; c++) {
     vChar winLossNew(winLoss);
@@ -150,6 +155,28 @@ int main() {
     if (changed == false)
       break;
   }
+#if STALEMATE_DRAW
+  for (int c = 1;; c++) {
+    std::cout << "iteration " << c << std::endl;
+    bool changed = false;
+    for (size_t i = 0; i < dSize; i++) {
+      if (winLoss[i] == 0) {
+        State s(allIS[i]);
+        vUint64 ns = s.nextStates();
+        for (size_t j = 0; j < ns.size(); j++) {
+          int i1 = allIS.find(ns[j]);
+          if (winLoss[i1] == 2) {
+            winLoss[i] = 2;
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+    if (changed == false)
+      break;
+  }
+#endif
 #if PERPETUAL_CHECK
   vChar winLossOld(winLoss);
   vChar isPerpetual(dSize, 0);
@@ -203,6 +230,10 @@ int main() {
           changed = true;
         }
       } else if (winLoss[i] != 0) {
+#if STALEMATE_DRAW
+        if (winLoss[i] == 2)
+          continue;
+#endif
         State s(allIS[i]);
         if ((winLoss[i] == 1 && s.isWin()) || (winLoss[i] == -1 && s.isLose()))
           continue;
@@ -217,6 +248,11 @@ int main() {
     if (changed == false)
       break;
   }
+#endif
+#if STALEMATE_DRAW
+  for (size_t i = 0; i < dSize; i++)
+    if (winLoss[i] == 2)
+      winLoss[i] = 0;
 #endif
   {
     ofstream ofs("winLoss.dat");

@@ -29,6 +29,7 @@ const int num_ptypes_in_hand = 4;
 
 #define DROP_RULE 1
 #define PROMOTION 1
+#define STALEMATE_DRAW 0
 #define TRY_RULE 0
 
 #define DEAD_PIECE 1
@@ -443,6 +444,21 @@ struct State {
       return isLoseByBlack();
     return rotateChangeTurn().isLoseByBlack();
   }
+#if STALEMATE_DRAW
+  bool isStalemate() const {
+    if (isWin() || isCheck())
+      return false;
+    vUint64 ns = nextStates();
+    if (!ns.size())
+      return true;
+    for (size_t j = 0; j < ns.size(); j++) {
+      State news(ns[j]);
+      if (!news.isWin())
+        return false;
+    }
+    return true;
+  }
+#endif
   /**
    * 駒の数があっていることを確認する
    */
