@@ -127,9 +127,12 @@ void WinLoseTable::showSequence(State const &s) const {
         news.applyMove(moves[i]);
         showSequence(news);
         break;
-      } else if (getWinLoseCount(index) - 1 < wlc) {
+      }
+#if !(PERPETUAL_CHECK)
+      else if (getWinLoseCount(index) - 1 < wlc) {
         throw InconsistentException();
       }
+#endif
     } else {
       assert(getWinLose(index) == 1);
       if (wl == -1) {

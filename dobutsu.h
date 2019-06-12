@@ -6,6 +6,7 @@
 #include <deque>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 using namespace std;
@@ -33,6 +34,7 @@ const int num_ptypes_in_hand = 4;
 #define DEAD_PIECE 1
 #define DOUBLE_PAWN 1
 #define PAWN_DROP_MATE 1
+#define PERPETUAL_CHECK 1
 
 /**
  * ファイル入力等でフォーマット異常を発見した時にthrowする例外
@@ -411,6 +413,11 @@ struct State {
     if (turn == BLACK)
       return isWinByBlack();
     return rotateChangeTurn().isWinByBlack();
+  }
+  bool isCheck() const {
+    if (turn == BLACK)
+      return rotateChangeTurn().isWinByBlack();
+    return isWinByBlack();
   }
   /**
    * 黒番の盤面が手番の負けかどうかを判定する
