@@ -2,7 +2,7 @@ all : makeAllState makeWinLose checkState checkcsa findDropBaby findZugZwang lon
 CXX = g++
 # CXX = g++-4 -m64
 # CXXFLAGS = -Wno-deprecated -O0 -g
-CXXFLAGS = -Wall -Wno-deprecated -DNDEBUG -O3 -Wno-sign-compare
+CXXFLAGS = -Wall -Wno-deprecated -DNDEBUG -O3 -Wno-sign-compare -std=c++11
 countState : countState.o
 	$(CXX) -o countState countState.o
 

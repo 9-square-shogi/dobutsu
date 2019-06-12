@@ -15,12 +15,18 @@ int main(int ac, char **ag) {
     AllStateTable allS("allstates.dat");
     WinLoseTable winLoseCheck(allS, "winLossCheck.dat",
                               "winLossCheckCount.dat");
+    int maxwlc = -1;
+    int maxwlc_index = -1;
     for (size_t i = 0; i < allS.size(); i++) {
-      if (winLoseCheck.getWinLoseCount(i) == 23) {
-        State s(allS[i], BLACK);
-        winLoseCheck.showSequence(s);
+      int wlc = winLoseCheck.getWinLoseCount(i);
+      if (wlc > maxwlc) {
+        maxwlc = wlc;
+        maxwlc_index = i;
       }
     }
+    State s(allS[maxwlc_index], BLACK);
+    winLoseCheck.showSequence(s);
+    return 0;
   }
   std::ifstream ifs(ag[1]);
   std::string all;

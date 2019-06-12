@@ -1,19 +1,15 @@
 #include "dobutsu.h"
 
-const char *Ptype::strs[6] = {0, "HI", "ZO", "KI", "NI", "LI"};
+const char *Ptype::strs[] = {0, "FU", "GI", "TO", "NG", "OU"};
 const Point directions[8] = {Point(1, -1), Point(0, -1), Point(-1, -1),
                              Point(1, 0),  Point(-1, 0), Point(1, 1),
                              Point(0, 1),  Point(-1, 1)};
-const int canMoves[5] = {
-    0x2,  // baby
-    0xa5, // elephant
-    0x5a, // giraffe
-#if 0
-  0xfa, // chiken
-#else
-    0x5f, // chiken
-#endif
-    0xff, // lion
+const int canMoves[] = {
+    0b00000010, // pawn
+    0b10100111, // silver
+    0b01011111, // promoted pawn
+    0b01011111, // promoted silver
+    0b11111111, // king
 };
 
 const int STAND = 0xff;
@@ -56,13 +52,13 @@ vMove readMoveFile(string const &fileName) {
 ostream &outPosition(ostream &os, int pos) {
   if (pos == 0xff)
     return os << "00";
-  int x = pos / 4, y = pos % 4;
-  assert(0 <= x && x <= 2);
-  assert(0 <= y && y <= 3);
-  return os << "CBA"[x] << "1234"[y];
+  int x = pos / height, y = pos % height;
+  assert(0 <= x && x < width);
+  assert(0 <= y && y < height);
+  return os << "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[width - 1 - x] << "123456789"[y];
 }
 ostream &outPtype(ostream &os, int ptype) {
-  assert(1 <= ptype && ptype <= 5);
+  assert(1 <= ptype && ptype <= num_ptypes);
   return os << Ptype::strs[ptype];
 }
 
@@ -78,28 +74,30 @@ ostream &operator<<(ostream &os, Move const &m) {
 }
 
 State::State(string const &s) {
-  assert(s.length() == 3 * 3 * 4 + 7);
-  for (int x = 0; x < 3; x++)
-    for (int y = 0; y < 4; y++)
-      board[x * 4 + y] = (char)Ptype::makePtype(s, y * 9 + (2 - x) * 3);
-  for (int i = 0; i < 6; i++)
-    stands[i] = s[3 * 3 * 4 + i] - '0';
-  if (s[3 * 3 * 4 + 6] == '+')
+  int eos = 3 * num_squares + num_ptypes_in_hand;
+  assert(s.length() == eos + 1);
+  for (int x = 0; x < width; x++)
+    for (int y = 0; y < height; y++)
+      board[x * height + y] =
+          (char)Ptype::makePtype(s, y * width * 3 + (width - 1 - x) * 3);
+  for (int i = 0; i < num_ptypes_in_hand; i++)
+    stands[i] = s[3 * num_squares + i] - '0';
+  if (s[eos] == '+')
     turn = BLACK;
   else {
-    if (s[3 * 3 * 4 + 6] != '-')
+    if (s[eos] != '-')
       throw FormatException();
     turn = WHITE;
   }
 }
 
 ostream &operator<<(ostream &os, State const &s) {
-  for (int y = 0; y < 4; y++) {
-    for (int x = 2; x >= 0; x--)
-      os << Ptype::str(s.board[x * 4 + y]);
+  for (int y = 0; y < height; y++) {
+    for (int x = width - 1; x >= 0; x--)
+      os << Ptype::str(s.board[x * height + y]);
     os << "\n";
   }
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < num_ptypes_in_hand; i++)
     os << s.stands[i];
   os << "\n";
   if (s.turn == BLACK)
@@ -112,10 +110,10 @@ ostream &operator<<(ostream &os, State const &s) {
 bool operator==(State const &s1, State const &s2) {
   if (s1.turn != s2.turn)
     return false;
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < num_squares; i++)
     if (s1.board[i] != s2.board[i])
       return false;
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < num_ptypes_in_hand; i++)
     if (s1.stands[i] != s2.stands[i])
       return false;
   return true;

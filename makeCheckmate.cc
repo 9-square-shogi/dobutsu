@@ -10,7 +10,7 @@ bool winByTry(State const &s) {
   assert(!s.isWin() && !s.isLose());
   vMove moves = s.nextMoves();
   for (size_t j = 0; j < moves.size(); j++) {
-    if (moves[j].ptype() == Ptype::LION && pos2Y(moves[j].to()) == 0) {
+    if (moves[j].ptype() == Ptype::KING && pos2Y(moves[j].to()) == 0) {
       State news(s);
       news.applyMove(moves[j]);
       if (!news.isWin() && news.isLose())

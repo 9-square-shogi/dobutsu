@@ -22,7 +22,7 @@ int main() {
     int minv = 1;
     for (size_t j = 0; j < moves.size(); j++) {
       // ひよこの1段目のdrop
-      if (moves[j].ptype() == Ptype::BABY && moves[j].from() == STAND &&
+      if (moves[j].ptype() == 1 && moves[j].from() == STAND &&
           pos2Y(moves[j].to()) == 0)
         continue;
       int wl, wlc;
