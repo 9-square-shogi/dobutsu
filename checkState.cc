@@ -26,5 +26,5 @@ int main(int ac, char **ag) {
   AllStateTable allS("allstates.dat");
   WinLoseTable winLose(allS, "winLoss.dat", "winLossCount.dat");
   //   WinLoseTable winLose(allS,"winLossWoDrop.dat","winLossWoDropCount.dat");
-  winLose.showSequence(s);
+  winLose.showSequence(s, -1);
 }

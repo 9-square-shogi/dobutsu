@@ -25,7 +25,7 @@ int main(int ac, char **ag) {
       }
     }
     State s(allS[maxwlc_index], BLACK);
-    winLoseCheck.showSequence(s);
+    winLoseCheck.showSequence(s, -1);
     return 0;
   }
   std::ifstream ifs(ag[1]);
@@ -37,5 +37,5 @@ int main(int ac, char **ag) {
   State s(all);
   AllStateTable allS("allstates.dat");
   WinLoseTable winLoseCheck(allS, "winLossCheck.dat", "winLossCheckCount.dat");
-  winLoseCheck.showSequence(s);
+  winLoseCheck.showSequence(s, -1);
 }

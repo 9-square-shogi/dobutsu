@@ -27,21 +27,30 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
     int i1 = allIS.find(ns[j]);
     if (winLoss[i1] != 0)
       continue;
-    State s1(allIS[i1]);
-    if (!s1.isCheck())
-      return false;
-    if (std::find(pastStates.begin(), pastStates.end(), i1) != pastStates.end())
+    vInt::iterator it = find(pastStates.begin(), pastStates.end(), i1);
+    if (it != pastStates.end()) {
+      for (; it < pastStates.end(); it += 2) {
+        if (!State(allIS[*it]).isCheck())
+          return false;
+      }
       continue;
+    }
     vInt pastStates1(pastStates);
     pastStates1.push_back(i1);
+    State s1(allIS[i1]);
     vUint64 ns1 = s1.nextStates();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
       int i2 = allIS.find(ns1[j1]);
       if (winLoss[i2] != 0)
         continue;
-      if (std::find(pastStates1.begin(), pastStates1.end(), i2) !=
-          pastStates1.end())
+      vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
+      if (it1 != pastStates1.end()) {
+        for (it1++; it1 < pastStates1.end(); it1 += 2) {
+          if (!State(allIS[*it1]).isCheck())
+            return false;
+        }
         goto HELL;
+      }
       vInt pastStates2(pastStates1);
       pastStates2.push_back(i2);
       if (isPerpetualCheck(allIS, winLoss, allIS[i2], pastStates2))
@@ -54,8 +63,7 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
 }
 
 int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
-                             vChar const &winLossCount,
-                             vChar const &isPerpetual, uint64 v,
+                             vChar const &winLossCount, uint64 v,
                              vInt &pastStates) {
   State s(v);
   vUint64 ns = s.nextStates();
@@ -67,29 +75,45 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
         maxwlc = winLossCount[i1];
       continue;
     }
-    if (std::find(pastStates.begin(), pastStates.end(), i1) != pastStates.end())
+    vInt::iterator it = find(pastStates.begin(), pastStates.end(), i1);
+    if (it != pastStates.end()) {
+      for (; it < pastStates.end(); it += 2) {
+        if (!State(allIS[*it]).isCheck())
+          return numeric_limits<int>::max();
+      }
       continue;
+    }
     vInt pastStates1(pastStates);
     pastStates1.push_back(i1);
     State s1(allIS[i1]);
     vUint64 ns1 = s1.nextStates();
-    int minwlc = std::numeric_limits<int>::max();
+    int minwlc = numeric_limits<int>::max();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
       int i2 = allIS.find(ns1[j1]);
-      if (!isPerpetual[i2])
+      if (winLoss[i2] != 0)
         continue;
-      if (std::find(pastStates1.begin(), pastStates1.end(), i2) !=
-          pastStates1.end())
+      vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
+      if (it1 != pastStates1.end()) {
+        for (it1++; it1 < pastStates1.end(); it1 += 2) {
+          if (!State(allIS[*it1]).isCheck())
+            goto HELL;
+        }
+        goto HEAVEN;
+      HELL:
         continue;
+      }
       vInt pastStates2(pastStates1);
       pastStates2.push_back(i2);
       int wlc = newWinLossCountRecursive(allIS, winLoss, winLossCount,
-                                         isPerpetual, allIS[i2], pastStates2);
+                                         allIS[i2], pastStates2);
       if (wlc < minwlc)
         minwlc = wlc;
     }
-    if (minwlc != std::numeric_limits<int>::max() && minwlc + 1 > maxwlc)
+    if (minwlc == numeric_limits<int>::max())
+      return numeric_limits<int>::max();
+    if (minwlc + 1 > maxwlc)
       maxwlc = minwlc + 1;
+  HEAVEN:;
   }
   return maxwlc + 1;
 }
@@ -100,11 +124,12 @@ int newWinLossCount(AllStateTable const &allIS, vChar const &winLoss,
   vUint64 ns = s.nextStates();
   if (!ns.size())
     return -1;
-  int wlc = wl == -1 ? -1 : std::numeric_limits<int>::max();
+  int wlc = wl == -1 ? -1 : numeric_limits<int>::max();
   for (size_t j = 0; j < ns.size(); j++) {
     int i1 = allIS.find(ns[j]);
-    if ((wl == -1 && winLoss[i1] == 1 && winLossCount[i1] > wlc) ||
-        (wl == 1 && winLoss[i1] == -1 && winLossCount[i1] < wlc))
+    if (winLoss[i1] != -wl)
+      continue;
+    if (wl == -1 ? (winLossCount[i1] > wlc) : (winLossCount[i1] < wlc))
       wlc = winLossCount[i1];
   }
   return wlc + 1;
@@ -192,6 +217,14 @@ int main() {
       }
     }
   }
+  for (size_t i = 0; i < dSize; i++) {
+    if (isPerpetual[i]) {
+      vInt pastStates;
+      pastStates.push_back(i);
+      winLossCount[i] = newWinLossCountRecursive(
+          allIS, winLossOld, winLossCount, allIS[i], pastStates);
+    }
+  }
   for (int c = 1;; c++) {
     vChar winLossNew(winLoss);
     std::cout << "iteration " << c << std::endl;
@@ -224,7 +257,7 @@ int main() {
         vInt pastStates;
         pastStates.push_back(i);
         int wlc = newWinLossCountRecursive(allIS, winLossOld, winLossCount,
-                                           isPerpetual, allIS[i], pastStates);
+                                           allIS[i], pastStates);
         if (wlc != winLossCount[i]) {
           winLossCount[i] = wlc;
           changed = true;
@@ -248,6 +281,30 @@ int main() {
     if (changed == false)
       break;
   }
+/*
+  for (size_t i = 0; i < dSize; i++) {
+    if (winLoss[i] != 0) {
+#if STALEMATE_DRAW
+      if (winLoss[i] == 2)
+        continue;
+#endif
+      if (!isPerpetual[i]) {
+        State s(allIS[i]);
+        if ((winLoss[i] == 1 && s.isWin()) || (winLoss[i] == -1 && s.isLose()))
+          continue;
+      }
+      int wlc =
+          newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
+      if (wlc == -1 || winLossCount[i] == wlc)
+        continue;
+      std::cout << "------------------" << std::endl;
+      std::cout << State(allIS[i]) << std::endl;
+      std::cout << (int)winLossCount[i] << " != " << wlc << std::endl;
+      std::cout << (int)winLoss[i] << std::endl;
+      std::cout << (isPerpetual[i] ? "true" : "false") << std::endl;
+    }
+  }
+*/
 #endif
 #if STALEMATE_DRAW
   for (size_t i = 0; i < dSize; i++)

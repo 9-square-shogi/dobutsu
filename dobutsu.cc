@@ -1,15 +1,48 @@
 #include "dobutsu.h"
 
-const char *Ptype::strs[] = {0, "FU", "GI", "TO", "NG", "OU"};
-const Point directions[8] = {Point(1, -1), Point(0, -1), Point(-1, -1),
-                             Point(1, 0),  Point(-1, 0), Point(1, 1),
-                             Point(0, 1),  Point(-1, 1)};
+// clang-format off
+const char *Ptype::strs[] = {
+    0,
+    "FU",
+    // "KY",
+    // "KE",
+    // "GI",
+    // "KI",
+    "KA",
+    "HI",
+    "TO",
+    // "NY",
+    // "NK",
+    // "NG",
+    "UM",
+    "RY",
+    "OU",
+};
+// clang-format on
+const Point directions8[8] = {Point(1, -1), Point(0, -1), Point(-1, -1),
+                              Point(1, 0),  Point(-1, 0), Point(1, 1),
+                              Point(0, 1),  Point(-1, 1)};
+const Point directions[24] = {
+    Point(2, -2), Point(1, -2), Point(0, -2), Point(-1, -2), Point(-2, -2),
+    Point(2, -1), Point(1, -1), Point(0, -1), Point(-1, -1), Point(-2, -1),
+    Point(2, 0),  Point(1, 0),  Point(-1, 0), Point(-2, 0),  Point(2, 1),
+    Point(1, 1),  Point(0, 1),  Point(-1, 1), Point(-2, 1),  Point(2, 2),
+    Point(1, 2),  Point(0, 2),  Point(-1, 2), Point(-2, 2)};
 const int canMoves[] = {
-    0b00000010, // pawn
-    0b10100111, // silver
-    0b01011111, // promoted pawn
-    0b01011111, // promoted silver
-    0b11111111, // king
+    0b00000'00000'0000'00100'00000, // pawn
+    // 0b00000'00000'0000'00100'00100, // lance
+    // 0b00000'00000'0000'00000'01010, // knight
+    // 0b00000'01010'0000'01110'00000, // silver
+    // 0b00000'00100'0110'01110'00000, // gold
+    0b10001'01010'0000'01010'10001, // bishop
+    0b00100'00100'1111'00100'00100, // rook
+    0b00000'00100'0110'01110'00000, // promoted pawn
+    // 0b00000'00100'0110'01110'00000, // promoted lance
+    // 0b00000'00100'0110'01110'00000, // promoted knight
+    // 0b00000'00100'0110'01110'00000, // promoted silver
+    0b10001'01110'0110'01110'10001, // promoted bishop
+    0b00100'01110'1111'01110'00100, // promoted rook
+    0b00000'01110'0110'01110'00000, // king
 };
 
 const int STAND = 0xff;

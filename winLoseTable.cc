@@ -80,12 +80,14 @@ int WinLoseTable::getWinLose(State const &s, Move const &move, int &wlc) const {
   return getWinLose(news, wlc);
 }
 
-void WinLoseTable::showSequence(State const &s) const {
+void WinLoseTable::showSequence(State const &s, int current_wlc) const {
   if (!s.isConsistent())
     throw InconsistentException();
   uint64 v = s.normalize();
   int index = allS.find(v);
-  if (getWinLoseCount(index) == 0 && getWinLose(index) == 0) {
+  if (current_wlc == -1)
+    current_wlc = getWinLoseCount(index);
+  if (current_wlc == 0 && getWinLose(index) == 0) {
     vInt pastStates;
     showDrawSequence(s, pastStates);
     return;
@@ -93,8 +95,8 @@ void WinLoseTable::showSequence(State const &s) const {
   std::cerr << "------------------" << std::endl;
   std::cerr << s << std::endl;
   std::cerr << (int)(s.turn == BLACK ? getWinLose(index) : -getWinLose(index))
-            << "(" << (int)getWinLoseCount(index) << ")" << std::endl;
-  if (getWinLoseCount(index) == 0)
+            << "(" << current_wlc << ")" << std::endl;
+  if (current_wlc == 0)
     return;
   if (getWinLose(index) == 0) {
     std::cerr << s << std::endl;
@@ -102,11 +104,18 @@ void WinLoseTable::showSequence(State const &s) const {
     throw InconsistentException();
   }
   vMove moves = s.nextMoves();
+#if PERPETUAL_CHECK
+  bool isPerpetual = true;
+#endif
   for (size_t i = 0; i < moves.size(); i++) {
     int wl, wlc;
     wl = getWinLose(s, moves[i], wlc);
     std::cerr << i << " : " << moves[i] << " " << wl << "(" << wlc << ")"
               << std::endl;
+#if PERPETUAL_CHECK
+    if (current_wlc - 1 == wlc)
+      isPerpetual = false;
+#endif
   }
   for (size_t i = 0; i < moves.size(); i++) {
     int wl, wlc;
@@ -115,16 +124,20 @@ void WinLoseTable::showSequence(State const &s) const {
       if (wl != 1) {
         //	throw InconsistentException();
       }
-      if (getWinLoseCount(index) - 1 == wlc) {
+      if (
+#if PERPETUAL_CHECK
+          isPerpetual ? (current_wlc - 1 < wlc) :
+#endif
+                      (current_wlc - 1 == wlc)) {
         std::cerr << "Move : " << moves[i] << " " << wl << "(" << wlc << ")"
                   << std::endl;
         State news(s);
         news.applyMove(moves[i]);
-        showSequence(news);
+        showSequence(news, current_wlc - 1);
         break;
       }
 #if !(PERPETUAL_CHECK)
-      else if (getWinLoseCount(index) - 1 < wlc) {
+      else if (current_wlc - 1 < wlc) {
         throw InconsistentException();
       }
 #endif
@@ -136,7 +149,7 @@ void WinLoseTable::showSequence(State const &s) const {
                     << std::endl;
           State news(s);
           news.applyMove(moves[i]);
-          showSequence(news);
+          showSequence(news, current_wlc - 1);
           break;
         } else if (getWinLoseCount(index) - 1 > wlc) {
           throw InconsistentException();
