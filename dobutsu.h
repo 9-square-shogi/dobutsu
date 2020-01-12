@@ -399,6 +399,8 @@ struct State {
     if (((1 << dir) & canMoves[ptype - 1]) == 0)
       return false;
 #if SLIDING_PIECE
+    // if (ptype == Ptype::KNIGHT)
+    //   return true;
     int dir_x = directions[dir].real();
     int dir_y = directions[dir].imag();
     if (dir_x >= -1 && dir_x <= 1 && dir_y >= -1 && dir_y <= 1)
