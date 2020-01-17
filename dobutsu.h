@@ -522,36 +522,36 @@ struct State {
         counts[Ptype::PAWN] + stands[0] + stands[num_ptypes_in_hand / 2] != 2)
       return false;
     if (counts[Ptype::LANCE] >= 0 && stands[1] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-        counts[Ptype::LANCE] + stands[1] + stands[num_ptypes_in_hand / 2 + 1] !=
+        stands[1 + num_ptypes_in_hand / 2] >= 0 &&
+        counts[Ptype::LANCE] + stands[1] + stands[1 + num_ptypes_in_hand / 2] !=
             0)
       return false;
     if (counts[Ptype::KNIGHT] >= 0 && stands[2] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 2] >= 0 &&
+        stands[2 + num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::KNIGHT] + stands[2] +
-                stands[num_ptypes_in_hand / 2 + 2] !=
+                stands[2 + num_ptypes_in_hand / 2] !=
             0)
       return false;
     if (counts[Ptype::SILVER] >= 0 && stands[3] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 3] >= 0 &&
+        stands[3 + num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::SILVER] + stands[3] +
-                stands[num_ptypes_in_hand / 2 + 3] !=
+                stands[3 + num_ptypes_in_hand / 2] !=
             0)
       return false;
     if (counts[Ptype::GOLD] >= 0 && stands[4] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 4] >= 0 &&
-        counts[Ptype::GOLD] + stands[4] + stands[num_ptypes_in_hand / 2 + 4] !=
+        stands[4 + num_ptypes_in_hand / 2] >= 0 &&
+        counts[Ptype::GOLD] + stands[4] + stands[4 + num_ptypes_in_hand / 2] !=
             0)
       return false;
     if (counts[Ptype::BISHOP] >= 0 && stands[5] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 5] >= 0 &&
+        stands[5 + num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::BISHOP] + stands[5] +
-                stands[num_ptypes_in_hand / 2 + 5] !=
+                stands[5 + num_ptypes_in_hand / 2] !=
             1)
       return false;
     if (counts[Ptype::ROOK] >= 0 && stands[6] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 6] >= 0 &&
-        counts[Ptype::ROOK] + stands[6] + stands[num_ptypes_in_hand / 2 + 6] !=
+        stands[6 + num_ptypes_in_hand / 2] >= 0 &&
+        counts[Ptype::ROOK] + stands[6] + stands[6 + num_ptypes_in_hand / 2] !=
             1)
       return false;
 #endif
