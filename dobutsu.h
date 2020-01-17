@@ -12,8 +12,10 @@
 using namespace std;
 typedef complex<int> Point;
 
-typedef unsigned long long uint64;
-typedef vector<uint64> vUint64;
+// typedef unsigned long long uint64;
+typedef __uint128_t uint128;
+// typedef vector<uint64> vUint64;
+typedef vector<uint128> vUint128;
 typedef vector<char> vChar;
 typedef unsigned char uchar;
 typedef vector<uchar> vuChar;
@@ -24,14 +26,14 @@ typedef vector<int> vInt;
 const int width = 3;
 const int height = 3;
 const int num_squares = width * height;
-const int num_ptypes = 7;
-const int num_ptypes_in_hand = 6;
+const int num_ptypes = 15;
+const int num_ptypes_in_hand = 14;
 
 #define DROP_RULE 1
 #define PROMOTION 1
+#define SLIDING_PIECE 1
 #define STALEMATE_DRAW 0
 #define TRY_RULE 0
-#define SLIDING_PIECE 1
 
 #define DEAD_PIECE 1
 #define DOUBLE_PAWN 1
@@ -68,16 +70,16 @@ struct Ptype {
   enum {
     EMPTY,
     PAWN,
-    // LANCE,
-    // KNIGHT,
-    // SILVER,
-    // GOLD,
+    LANCE,
+    KNIGHT,
+    SILVER,
+    GOLD,
     BISHOP,
     ROOK,
     PPAWN,
-    // PLANCE,
-    // PKNIGHT,
-    // PSILVER,
+    PLANCE,
+    PKNIGHT,
+    PSILVER,
     PBISHOP,
     PROOK,
     KING,
@@ -251,12 +253,12 @@ ostream &operator<<(ostream &os, Move const &m);
  */
 struct State {
   /**
-   * 盤面の12マスに入るptype
+   * 盤面の9マスに入るptype
    */
   char board[num_squares];
   /**
    * それぞれのプレイヤーの駒台の駒の個数
-   * 2 * 3
+   * 2 * 7
    */
   int stands[num_ptypes_in_hand];
   /**
@@ -270,17 +272,17 @@ struct State {
     *this = State("-FU-KA-OU"
                   " .  .  . "
                   "+OU+HI+FU"
-                  "000000"
+                  "00000000000000"
                   "+");
   }
   /**
    * packした状態からplayerを指定して作る
    */
-  State(uint64 p, Player pl = BLACK) {
+  State(uint128 p, Player pl = BLACK) {
     if (pl == BLACK)
-      *this = makeBlackFromUint64(p);
+      *this = makeBlackFromUint128(p);
     else
-      *this = makeBlackFromUint64(p).rotateChangeTurn();
+      *this = makeBlackFromUint128(p).rotateChangeTurn();
   }
   /**
    * CSA風の表記から作る
@@ -288,24 +290,24 @@ struct State {
   State(string const &s);
   /**
    * packした状態から黒番で作る
-   * bit 59 - 48 : 48+2*jビットからの2ビットづつで stands[j]を表す
-   * bit 47 - 0  : 4*posビットからの4ビットずつで board[pos] を表す
-   *             : ptypeの下位4ビットなのでbit3がsetされている時は，
+   * bit 121 - 80 : 80+3*jビットからの3ビットづつで stands[j]を表す
+   * bit 79 - 0  : 5*posビットからの5ビットずつで board[pos] を表す
+   *             : ptypeの下位5ビットなのでbit4がsetされている時は，
    *             : WHITE用に補正
    */
-  static State makeBlackFromUint64(uint64 p) {
+  static State makeBlackFromUint128(uint128 p) {
     State s;
     int i = 0;
     for (int x = 0; x < width; x++)
       for (int y = 0; y < height; y++) {
-        char c = (p >> (i * 4)) & 15;
-        if ((c & 8) != 0)
-          c -= 16;
+        char c = (p >> (i * 5)) & 0b11111;
+        if ((c & 0b10000) != 0)
+          c -= 32;
         s.board[x * height + y] = c;
         i++;
       }
     for (int j = 0; j < num_ptypes_in_hand; j++) {
-      s.stands[j] = (p >> (48 + j * 2)) & 3;
+      s.stands[j] = (p >> (80 + j * 3)) & 0b111;
     }
     s.turn = BLACK;
     return s;
@@ -341,33 +343,33 @@ struct State {
     return ret;
   }
   /**
-   * 黒番の盤面を64ビット整数に変換
+   * 黒番の盤面を128ビット整数に変換
    */
-  uint64 pack() const {
+  uint128 pack() const {
     assert(turn == BLACK);
-    uint64 ret = 0ull;
+    uint128 ret = 0;
     int i = 0;
     for (int x = 0; x < width; x++)
       for (int y = 0; y < height; y++) {
-        ret |= static_cast<uint64>(board[x * height + y] & 15) << (i * 4);
+        ret |= static_cast<uint128>(board[x * height + y] & 0b11111) << (i * 5);
         i++;
       }
     for (int j = 0; j < num_ptypes_in_hand; j++)
-      ret |= static_cast<uint64>(stands[j]) << (48 + j * 2);
+      ret |= static_cast<uint128>(stands[j]) << (80 + j * 3);
     return ret;
   }
   /**
-   * 黒番に正規化した上で64ビット整数に変換し，flipしたものと小さい方を返す
+   * 黒番に正規化した上で128ビット整数に変換し，flipしたものと小さい方を返す
    */
-  uint64 normalize() const {
+  uint128 normalize() const {
     if (turn == BLACK) {
-      uint64 u1 = pack();
-      uint64 u2 = flip().pack();
+      uint128 u1 = pack();
+      uint128 u2 = flip().pack();
       return std::min(u1, u2);
     } else {
       State news = rotateChangeTurn();
-      uint64 u1 = news.pack();
-      uint64 u2 = news.flip().pack();
+      uint128 u1 = news.pack();
+      uint128 u2 = news.flip().pack();
       return std::min(u1, u2);
     }
   }
@@ -399,8 +401,8 @@ struct State {
     if (((1 << dir) & canMoves[ptype - 1]) == 0)
       return false;
 #if SLIDING_PIECE
-    // if (ptype == Ptype::KNIGHT)
-    //   return true;
+    if (ptype == Ptype::KNIGHT)
+      return true;
     int dir_x = directions[dir].real();
     int dir_y = directions[dir].imag();
     if (dir_x >= -1 && dir_x <= 1 && dir_y >= -1 && dir_y <= 1)
@@ -473,7 +475,7 @@ struct State {
   bool isStalemate() const {
     if (isWin() || isCheck())
       return false;
-    vUint64 ns = nextStates();
+    vUint128 ns = nextStates();
     if (!ns.size())
       return true;
     for (size_t j = 0; j < ns.size(); j++) {
@@ -497,12 +499,12 @@ struct State {
 #if PROMOTION
         if (ptype == Ptype::PPAWN)
           ptype = Ptype::PAWN;
-        // else if (ptype == Ptype::PLANCE)
-        //   ptype = Ptype::LANCE;
-        // else if (ptype == Ptype::PKNIGHT)
-        //   ptype = Ptype::KNIGHT;
-        // else if (ptype == Ptype::PSILVER)
-        //   ptype = Ptype::SILVER;
+        else if (ptype == Ptype::PLANCE)
+          ptype = Ptype::LANCE;
+        else if (ptype == Ptype::PKNIGHT)
+          ptype = Ptype::KNIGHT;
+        else if (ptype == Ptype::PSILVER)
+          ptype = Ptype::SILVER;
         else if (ptype == Ptype::PBISHOP)
           ptype = Ptype::BISHOP;
         else if (ptype == Ptype::PROOK)
@@ -518,39 +520,37 @@ struct State {
         stands[num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::PAWN] + stands[0] + stands[num_ptypes_in_hand / 2] != 2)
       return false;
-    // if (counts[Ptype::LANCE] >= 0 && stands[1] >= 0 &&
-    //     stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-    //     counts[Ptype::LANCE] + stands[1] + stands[num_ptypes_in_hand / 2 + 1]
-    //     !=
-    //         2)
-    //   return false;
-    // if (counts[Ptype::KNIGHT] >= 0 && stands[1] >= 0 &&
-    //     stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-    //     counts[Ptype::KNIGHT] + stands[1] +
-    //             stands[num_ptypes_in_hand / 2 + 1] !=
-    //         2)
-    //   return false;
-    // if (counts[Ptype::SILVER] >= 0 && stands[1] >= 0 &&
-    //     stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-    //     counts[Ptype::SILVER] + stands[1] +
-    //             stands[num_ptypes_in_hand / 2 + 1] !=
-    //         2)
-    //   return false;
-    // if (counts[Ptype::GOLD] >= 0 && stands[1] >= 0 &&
-    //     stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-    //     counts[Ptype::GOLD] + stands[1] + stands[num_ptypes_in_hand / 2 + 1]
-    //     !=
-    //         2)
-    //   return false;
-    if (counts[Ptype::BISHOP] >= 0 && stands[1] >= 0 &&
+    if (counts[Ptype::LANCE] >= 0 && stands[1] >= 0 &&
         stands[num_ptypes_in_hand / 2 + 1] >= 0 &&
-        counts[Ptype::BISHOP] + stands[1] +
-                stands[num_ptypes_in_hand / 2 + 1] !=
+        counts[Ptype::LANCE] + stands[1] + stands[num_ptypes_in_hand / 2 + 1] !=
+            0)
+      return false;
+    if (counts[Ptype::KNIGHT] >= 0 && stands[2] >= 0 &&
+        stands[num_ptypes_in_hand / 2 + 2] >= 0 &&
+        counts[Ptype::KNIGHT] + stands[2] +
+                stands[num_ptypes_in_hand / 2 + 2] !=
+            0)
+      return false;
+    if (counts[Ptype::SILVER] >= 0 && stands[3] >= 0 &&
+        stands[num_ptypes_in_hand / 2 + 3] >= 0 &&
+        counts[Ptype::SILVER] + stands[3] +
+                stands[num_ptypes_in_hand / 2 + 3] !=
+            0)
+      return false;
+    if (counts[Ptype::GOLD] >= 0 && stands[4] >= 0 &&
+        stands[num_ptypes_in_hand / 2 + 4] >= 0 &&
+        counts[Ptype::GOLD] + stands[4] + stands[num_ptypes_in_hand / 2 + 4] !=
+            0)
+      return false;
+    if (counts[Ptype::BISHOP] >= 0 && stands[5] >= 0 &&
+        stands[num_ptypes_in_hand / 2 + 5] >= 0 &&
+        counts[Ptype::BISHOP] + stands[5] +
+                stands[num_ptypes_in_hand / 2 + 5] !=
             1)
       return false;
-    if (counts[Ptype::ROOK] >= 0 && stands[2] >= 0 &&
-        stands[num_ptypes_in_hand / 2 + 2] >= 0 &&
-        counts[Ptype::ROOK] + stands[2] + stands[num_ptypes_in_hand / 2 + 2] !=
+    if (counts[Ptype::ROOK] >= 0 && stands[6] >= 0 &&
+        stands[num_ptypes_in_hand / 2 + 6] >= 0 &&
+        counts[Ptype::ROOK] + stands[6] + stands[num_ptypes_in_hand / 2 + 6] !=
             1)
       return false;
 #endif
@@ -601,9 +601,9 @@ struct State {
     return ret;
   }
 #else
-  vUint64 nextStates() const {
+  vUint128 nextStates() const {
     vMove moves = nextMoves();
-    vUint64 ret;
+    vUint128 ret;
     for (size_t i = 0; i < moves.size(); i++) {
       State news(*this);
       news.applyMove(moves[i]);
@@ -666,15 +666,13 @@ struct State {
               if (i == Ptype::PAWN - 1) {
                 if (y == 0)
                   continue;
+              } else if (i == Ptype::LANCE - 1) {
+                if (y == 0)
+                  continue;
+              } else if (i == Ptype::KNIGHT - 1) {
+                if (y <= 1)
+                  continue;
               }
-//              else if (i == Ptype::LANCE - 1) {
-//                if (y == 0)
-//                  continue;
-//              }
-//              else if (i == Ptype::KNIGHT - 1) {
-//                if (y <= 1)
-//                  continue;
-//              }
 #endif
 #if DOUBLE_PAWN || PAWN_DROP_MATE
               if (i == Ptype::PAWN - 1) {
@@ -709,18 +707,18 @@ struct State {
                   ret.push_back(Move(BLACK,
                                      makePosition(pos1.real(), pos1.imag()),
                                      makePosition(x, y), Ptype::PPAWN));
-                // else if (ptype1 == Ptype::LANCE)
-                //   ret.push_back(Move(BLACK,
-                //                      makePosition(pos1.real(), pos1.imag()),
-                //                      makePosition(x, y), Ptype::PLANCE));
-                // else if (ptype1 == Ptype::KNIGHT)
-                //   ret.push_back(Move(BLACK,
-                //                      makePosition(pos1.real(), pos1.imag()),
-                //                      makePosition(x, y), Ptype::PKNIGHT));
-                // else if (ptype1 == Ptype::SILVER)
-                //   ret.push_back(Move(BLACK,
-                //                      makePosition(pos1.real(), pos1.imag()),
-                //                      makePosition(x, y), Ptype::PSILVER));
+                else if (ptype1 == Ptype::LANCE)
+                  ret.push_back(Move(BLACK,
+                                     makePosition(pos1.real(), pos1.imag()),
+                                     makePosition(x, y), Ptype::PLANCE));
+                else if (ptype1 == Ptype::KNIGHT)
+                  ret.push_back(Move(BLACK,
+                                     makePosition(pos1.real(), pos1.imag()),
+                                     makePosition(x, y), Ptype::PKNIGHT));
+                else if (ptype1 == Ptype::SILVER)
+                  ret.push_back(Move(BLACK,
+                                     makePosition(pos1.real(), pos1.imag()),
+                                     makePosition(x, y), Ptype::PSILVER));
                 else if (ptype1 == Ptype::BISHOP)
                   ret.push_back(Move(BLACK,
                                      makePosition(pos1.real(), pos1.imag()),
@@ -735,15 +733,13 @@ struct State {
               if (ptype1 == Ptype::PAWN) {
                 if (y == 0)
                   continue;
+              } else if (ptype1 == Ptype::LANCE) {
+                if (y == 0)
+                  continue;
+              } else if (ptype1 == Ptype::KNIGHT) {
+                if (y <= 1)
+                  continue;
               }
-//              else if (ptype1 == Ptype::LANCE) {
-//                if (y == 0)
-//                  continue;
-//              }
-//              else if (ptype1 == Ptype::KNIGHT) {
-//                if (y <= 1)
-//                  continue;
-//              }
 #endif
               ret.push_back(Move(BLACK, makePosition(pos1.real(), pos1.imag()),
                                  makePosition(x, y), ptype1));
@@ -803,18 +799,14 @@ struct State {
         return false;
       if (from_ptype != ptype) {
 #if PROMOTION
-        // clang-format off
-        if ((
-             (ptype != Ptype::PPAWN || from_ptype != Ptype::PAWN)
-          // && (ptype != Ptype::PLANCE || from_ptype != Ptype::LANCE)
-          // && (ptype != Ptype::PKNIGHT || from_ptype != Ptype::KNIGHT)
-          // && (ptype != Ptype::PSILVER || from_ptype != Ptype::SILVER)
-          && (ptype != Ptype::PBISHOP || from_ptype != Ptype::BISHOP)
-          && (ptype != Ptype::PROOK || from_ptype != Ptype::ROOK)
-            ) ||
+        if (((ptype != Ptype::PPAWN || from_ptype != Ptype::PAWN) &&
+             (ptype != Ptype::PLANCE || from_ptype != Ptype::LANCE) &&
+             (ptype != Ptype::PKNIGHT || from_ptype != Ptype::KNIGHT) &&
+             (ptype != Ptype::PSILVER || from_ptype != Ptype::SILVER) &&
+             (ptype != Ptype::PBISHOP || from_ptype != Ptype::BISHOP) &&
+             (ptype != Ptype::PROOK || from_ptype != Ptype::ROOK)) ||
             (pos2Y(move.to()) != (turn == BLACK ? 0 : height - 1) &&
              pos2Y(move.from()) != (turn == BLACK ? 0 : height - 1)))
-// clang-format on
 #endif
           return false;
       }
@@ -840,20 +832,18 @@ struct State {
     } else {
       assert(move.ptype() == abs(board[move.from()])
 #if PROMOTION
-             // clang-format off
              || (move.ptype() == Ptype::PPAWN &&
-                 abs(board[move.from()]) == Ptype::PAWN)
-             // || (move.ptype() == Ptype::PLANCE &&
-             //     abs(board[move.from()]) == Ptype::LANCE)
-             // || (move.ptype() == Ptype::PKNIGHT &&
-             //     abs(board[move.from()]) == Ptype::KNIGHT)
-             // || (move.ptype() == Ptype::PSILVER &&
-             //     abs(board[move.from()]) == Ptype::SILVER)
-             || (move.ptype() == Ptype::PBISHOP &&
-                 abs(board[move.from()]) == Ptype::BISHOP)
-             || (move.ptype() == Ptype::PROOK &&
-                 abs(board[move.from()]) == Ptype::ROOK)
-// clang-format on
+                 abs(board[move.from()]) == Ptype::PAWN) ||
+             (move.ptype() == Ptype::PLANCE &&
+              abs(board[move.from()]) == Ptype::LANCE) ||
+             (move.ptype() == Ptype::PKNIGHT &&
+              abs(board[move.from()]) == Ptype::KNIGHT) ||
+             (move.ptype() == Ptype::PSILVER &&
+              abs(board[move.from()]) == Ptype::SILVER) ||
+             (move.ptype() == Ptype::PBISHOP &&
+              abs(board[move.from()]) == Ptype::BISHOP) ||
+             (move.ptype() == Ptype::PROOK &&
+              abs(board[move.from()]) == Ptype::ROOK)
 #endif
                  );
       board[move.from()] = Ptype::EMPTY;
@@ -870,12 +860,12 @@ struct State {
 #if PROMOTION
       if (capture_ptype == Ptype::PPAWN)
         capture_ptype = Ptype::PAWN;
-      // else if (capture_ptype == Ptype::PLANCE)
-      //   capture_ptype = Ptype::LANCE;
-      // else if (capture_ptype == Ptype::PKNIGHT)
-      //   capture_ptype = Ptype::KNIGHT;
-      // else if (capture_ptype == Ptype::PSILVER)
-      //   capture_ptype = Ptype::SILVER;
+      else if (capture_ptype == Ptype::PLANCE)
+        capture_ptype = Ptype::LANCE;
+      else if (capture_ptype == Ptype::PKNIGHT)
+        capture_ptype = Ptype::KNIGHT;
+      else if (capture_ptype == Ptype::PSILVER)
+        capture_ptype = Ptype::SILVER;
       else if (capture_ptype == Ptype::PBISHOP)
         capture_ptype = Ptype::BISHOP;
       else if (capture_ptype == Ptype::PROOK)

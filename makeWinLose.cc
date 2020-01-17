@@ -1,9 +1,9 @@
 #include "allStateTable.h"
 #include "dobutsu.h"
 
-int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint64 v) {
+int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint128 v) {
   State s(v);
-  vUint64 ns = s.nextStates();
+  vUint128 ns = s.nextStates();
   bool alllose = true;
   for (size_t j = 0; j < ns.size(); j++) {
     int i1 = allIS.find(ns[j]);
@@ -20,9 +20,9 @@ int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint64 v) {
 }
 #if PERPETUAL_CHECK
 bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
-                      vChar &isNotPerpetual, uint64 v, vInt &pastStates) {
+                      vChar &isNotPerpetual, uint128 v, vInt &pastStates) {
   State s(v);
-  vUint64 ns = s.nextStates();
+  vUint128 ns = s.nextStates();
   for (size_t j = 0; j < ns.size(); j++) {
     int i1 = allIS.find(ns[j]);
     if (winLoss[i1] != 0)
@@ -38,7 +38,7 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
     vInt pastStates1(pastStates);
     pastStates1.push_back(i1);
     State s1(allIS[i1]);
-    vUint64 ns1 = s1.nextStates();
+    vUint128 ns1 = s1.nextStates();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
       int i2 = allIS.find(ns1[j1]);
       if (winLoss[i2] != 0)
@@ -68,10 +68,10 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
 
 int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
                              vChar const &winLossCount,
-                             vChar const &isNotPerpetual, uint64 v,
+                             vChar const &isNotPerpetual, uint128 v,
                              vInt &pastStates) {
   State s(v);
-  vUint64 ns = s.nextStates();
+  vUint128 ns = s.nextStates();
   int maxwlc = -1;
   for (size_t j = 0; j < ns.size(); j++) {
     int i1 = allIS.find(ns[j]);
@@ -91,7 +91,7 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
     vInt pastStates1(pastStates);
     pastStates1.push_back(i1);
     State s1(allIS[i1]);
-    vUint64 ns1 = s1.nextStates();
+    vUint128 ns1 = s1.nextStates();
     int minwlc = numeric_limits<int>::max();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
       int i2 = allIS.find(ns1[j1]);
@@ -126,9 +126,9 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
 }
 
 int newWinLossCount(AllStateTable const &allIS, vChar const &winLoss,
-                    vChar const &winLossCount, uint64 v, int wl) {
+                    vChar const &winLossCount, uint128 v, int wl) {
   State s(v);
-  vUint64 ns = s.nextStates();
+  vUint128 ns = s.nextStates();
   if (!ns.size())
     return -1;
   int wlc = wl == -1 ? -1 : numeric_limits<int>::max();
@@ -194,7 +194,7 @@ int main() {
     for (size_t i = 0; i < dSize; i++) {
       if (winLoss[i] == 0) {
         State s(allIS[i]);
-        vUint64 ns = s.nextStates();
+        vUint128 ns = s.nextStates();
         for (size_t j = 0; j < ns.size(); j++) {
           int i1 = allIS.find(ns[j]);
           if (winLoss[i1] == 2) {

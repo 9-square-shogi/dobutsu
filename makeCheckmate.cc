@@ -62,7 +62,7 @@ int main() {
       for (size_t j = 0; j < moves.size(); j++) {
         State news(s);
         news.applyMove(moves[j]);
-        uint64 v = news.normalize();
+        uint128 v = news.normalize();
         int index = allS.find(v);
         if (index < 0)
           throw InconsistentException();
@@ -94,7 +94,7 @@ int main() {
             for (size_t j = 0; j < moves.size(); j++) {
               State news(s);
               news.applyMove(moves[j]);
-              uint64 v = news.normalize();
+              uint128 v = news.normalize();
               int index = allS.find(v);
               if (index < 0)
                 throw InconsistentException();
@@ -122,7 +122,7 @@ int main() {
               news.applyMove(moves[j]);
               if (news.isWin())
                 continue;
-              uint64 v = news.normalize();
+              uint128 v = news.normalize();
               int index = allS.find(v);
               if (index < 0)
                 throw InconsistentException();

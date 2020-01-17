@@ -61,7 +61,7 @@ int WinLoseTable::getWinLose(State const &s, int &wlc) const {
     return winLose[index];
   }
 #else
-  uint64 v = s.normalize();
+  uint128 v = s.normalize();
   int index = allS.find(v);
   assert(0 <= index && index < allS.size());
   wlc = getWinLoseCount(index);
@@ -83,7 +83,7 @@ int WinLoseTable::getWinLose(State const &s, Move const &move, int &wlc) const {
 void WinLoseTable::showSequence(State const &s, int current_wlc) const {
   if (!s.isConsistent())
     throw InconsistentException();
-  uint64 v = s.normalize();
+  uint128 v = s.normalize();
   int index = allS.find(v);
   if (current_wlc == -1)
     current_wlc = getWinLoseCount(index);
@@ -160,7 +160,7 @@ void WinLoseTable::showSequence(State const &s, int current_wlc) const {
 }
 
 void WinLoseTable::showDrawSequence(State const &s, vInt &pastStates) const {
-  uint64 v = s.normalize();
+  uint128 v = s.normalize();
   int index = allS.find(v);
   std::cerr << "------------------" << std::endl;
   std::cerr << s << std::endl;

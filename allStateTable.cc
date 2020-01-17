@@ -7,11 +7,11 @@ AllStateTable::AllStateTable(string const &fileName, bool lazy) {
   if (stat(fileName.c_str(), &st) < 0) {
     abort();
   }
-  c_size = st.st_size / sizeof(uint64);
+  c_size = st.st_size / sizeof(uint128);
   ifs.open(fileName.c_str());
   if (lazy == false) {
     contents.resize(c_size);
-    ifs.read((char *)&contents[0], c_size * sizeof(uint64));
+    ifs.read((char *)&contents[0], c_size * sizeof(uint128));
     ifs.close();
   }
 }
@@ -22,11 +22,11 @@ AllStateTable::~AllStateTable() {
   }
 }
 
-int AllStateTable::find(uint64 v) const {
+int AllStateTable::find(uint128 v) const {
   int low = 0, high = (int)c_size - 1;
   while (low < high) {
     int mid = (low + high) / 2;
-    uint64 v1 = (*this)[mid];
+    uint128 v1 = (*this)[mid];
     if (v1 == v)
       return mid;
     else if (v1 > v) {
