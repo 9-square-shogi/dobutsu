@@ -117,8 +117,11 @@ ostream &operator<<(ostream &os, State const &s) {
       os << Ptype::str(s.board[x * height + y]);
     os << "\n";
   }
-  for (int i = 0; i < num_ptypes_in_hand; i++)
+  for (int i = 0; i < num_ptypes_in_hand / 2; i++)
     os << s.stands[i];
+  os << "\n";
+  for (int i = 0; i < num_ptypes_in_hand / 2; i++)
+    os << s.stands[num_ptypes_in_hand / 2 + i];
   os << "\n";
   if (s.turn == BLACK)
     os << "+\n";
