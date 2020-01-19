@@ -261,10 +261,13 @@ int main() {
     if (changed == false)
       break;
   }
+  vChar isInconsistent(dSize, 0);
   for (int c = 1;; c++) {
     std::cout << "iteration " << c << std::endl;
     bool changed = false;
     for (size_t i = 0; i < dSize; i++) {
+      if (isInconsistent[i])
+        continue;
       if (isPerpetual[i]) {
         vInt pastStates;
         pastStates.push_back(i);
@@ -273,6 +276,18 @@ int main() {
                                      isNotPerpetual, allIS[i], pastStates);
         if (wlc != winLossCount[i]) {
           winLossCount[i] = wlc;
+          changed = true;
+        }
+        int wlc1 =
+            newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
+        if (wlc > wlc1) {
+          /*
+          std::cout << "------------------" << std::endl;
+          std::cout << State(allIS[i]) << std::endl;
+          std::cout << wlc << " > " << wlc1 << std::endl;
+          */
+          winLossCount[i] = wlc1;
+          isInconsistent[i] = 1;
           changed = true;
         }
       } else if (winLoss[i] != 0) {
