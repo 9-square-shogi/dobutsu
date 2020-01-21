@@ -20,8 +20,8 @@ int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint128 v) {
 }
 #if PERPETUAL_CHECK
 bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
-                      vChar const &isPerpetual, vChar &hasRepetition, uint128 v,
-                      vInt &pastStates) {
+                      /*vChar &isPerpetual,*/
+                      vChar &hasRepetitionDraw, uint128 v, vInt &pastStates) {
   State s(v);
   vUint128 ns = s.nextStates();
   for (size_t j = 0; j < ns.size(); j++) {
@@ -44,7 +44,7 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
       int i2 = allIS.find(ns1[j1]);
       if (winLoss[i2] != 0)
         continue;
-      if (hasRepetition[i2] && !isPerpetual[i2])
+      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/)
         continue;
       vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
       if (it1 != pastStates1.end()) {
@@ -56,10 +56,10 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
       }
       vInt pastStates2(pastStates1);
       pastStates2.push_back(i2);
-      if (isPerpetualCheck(allIS, winLoss, isPerpetual, hasRepetition,
+      if (isPerpetualCheck(allIS, winLoss, /*isPerpetual,*/ hasRepetitionDraw,
                            allIS[i2], pastStates2))
         goto HELL;
-      hasRepetition[i2] = 1;
+      hasRepetitionDraw[i2] = 1;
     }
     return false;
   HELL:;
@@ -69,8 +69,8 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
 
 int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
                              vChar const &winLossCount,
-                             vChar const &isPerpetual,
-                             vChar const &hasRepetition, uint128 v,
+                             /*vChar const &isPerpetual,*/
+                             vChar const &hasRepetitionDraw, uint128 v,
                              vInt &pastStates) {
   State s(v);
   vUint128 ns = s.nextStates();
@@ -99,7 +99,7 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
       int i2 = allIS.find(ns1[j1]);
       if (winLoss[i2] != 0)
         continue;
-      if (hasRepetition[i2] && !isPerpetual[i2])
+      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/)
         continue;
       vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
       if (it1 != pastStates1.end()) {
@@ -113,9 +113,9 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
       }
       vInt pastStates2(pastStates1);
       pastStates2.push_back(i2);
-      int wlc =
-          newWinLossCountRecursive(allIS, winLoss, winLossCount, isPerpetual,
-                                   hasRepetition, allIS[i2], pastStates2);
+      int wlc = newWinLossCountRecursive(allIS, winLoss, winLossCount,
+                                         /*isPerpetual,*/ hasRepetitionDraw,
+                                         allIS[i2], pastStates2);
       if (wlc < minwlc)
         minwlc = wlc;
     }
@@ -214,30 +214,31 @@ int main() {
 #endif
 #if PERPETUAL_CHECK
   vChar winLossOld(winLoss);
-  vChar isPerpetual(dSize, 0);
-  vChar hasRepetition(dSize, 0);
+  vChar isPerpetual(dSize, -1);
+  vChar hasRepetitionDraw(dSize, -1);
   for (size_t i = 0; i < dSize; i++) {
     if (winLoss[i] == 0) {
       vInt pastStates;
       pastStates.push_back(i);
-      if (isPerpetualCheck(allIS, winLossOld, isPerpetual, hasRepetition,
-                           allIS[i], pastStates)) {
+      if (isPerpetualCheck(allIS, winLossOld, /*isPerpetual,*/
+                           hasRepetitionDraw, allIS[i], pastStates)) {
         isPerpetual[i] = 1;
         winLoss[i] = -1;
         count[0]++;
         count[1]--;
       } else {
-        hasRepetition[i] = 1;
+        isPerpetual[i] = 0;
+        hasRepetitionDraw[i] = 1;
       }
     }
   }
   for (size_t i = 0; i < dSize; i++) {
-    if (isPerpetual[i]) {
+    if (isPerpetual[i] == 1) {
       vInt pastStates;
       pastStates.push_back(i);
-      winLossCount[i] =
-          newWinLossCountRecursive(allIS, winLossOld, winLossCount, isPerpetual,
-                                   hasRepetition, allIS[i], pastStates);
+      winLossCount[i] = newWinLossCountRecursive(
+          allIS, winLossOld, winLossCount, /*isPerpetual,*/
+          hasRepetitionDraw, allIS[i], pastStates);
     }
   }
   for (int c = 1;; c++) {
@@ -264,18 +265,33 @@ int main() {
     if (changed == false)
       break;
   }
+  vChar isInconsistent(dSize, 0);
   for (int c = 1;; c++) {
     std::cout << "iteration " << c << std::endl;
     bool changed = false;
     for (size_t i = 0; i < dSize; i++) {
-      if (isPerpetual[i]) {
+      if (isInconsistent[i])
+        continue;
+      if (isPerpetual[i] == 1) {
         vInt pastStates;
         pastStates.push_back(i);
         int wlc = newWinLossCountRecursive(allIS, winLossOld, winLossCount,
-                                           isPerpetual, hasRepetition, allIS[i],
-                                           pastStates);
+                                           /*isPerpetual,*/ hasRepetitionDraw,
+                                           allIS[i], pastStates);
         if (wlc != winLossCount[i]) {
           winLossCount[i] = wlc;
+          changed = true;
+        }
+        int wlc1 =
+            newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
+        if (wlc > wlc1) {
+          /*
+          std::cout << "------------------" << std::endl;
+          std::cout << State(allIS[i]) << std::endl;
+          std::cout << wlc << " > " << wlc1 << std::endl;
+          */
+          winLossCount[i] = wlc1;
+          isInconsistent[i] = 1;
           changed = true;
         }
       } else if (winLoss[i] != 0) {
@@ -304,7 +320,7 @@ int main() {
       if (winLoss[i] == 2)
         continue;
 #endif
-      if (!isPerpetual[i]) {
+      if (isPerpetual[i] != 1) {
         State s(allIS[i]);
         if ((winLoss[i] == 1 && s.isWin()) || (winLoss[i] == -1 && s.isLose()))
           continue;
@@ -315,9 +331,9 @@ int main() {
         continue;
       std::cout << "------------------" << std::endl;
       std::cout << State(allIS[i]) << std::endl;
-      std::cout << (int)winLossCount[i] << " != " << wlc << std::endl;
       std::cout << (int)winLoss[i] << std::endl;
-      std::cout << (isPerpetual[i] ? "true" : "false") << std::endl;
+      std::cout << (int)winLossCount[i] << " != " << wlc << std::endl;
+      std::cout << (int)isPerpetual[i] << std::endl;
     }
   }
 */
