@@ -31,12 +31,12 @@ const int num_ptypes_in_hand = 14;
 
 #define DROP_RULE 1
 #define PROMOTION 1
-#define SLIDING_PIECE 1
 #define STALEMATE_DRAW 0
 #define TRY_RULE 0
 
 #define DEAD_PIECE 1
 #define DOUBLE_PAWN 1
+#define JUMPING_OVER_PIECES 1
 #define PAWN_DROP_MATE 1
 #define PERPETUAL_CHECK 1
 
@@ -401,7 +401,7 @@ struct State {
   bool canMove(char ptype, int dir, Point from) const {
     if (((1 << dir) & canMoves[ptype - 1]) == 0)
       return false;
-#if SLIDING_PIECE
+#if JUMPING_OVER_PIECES
     if (ptype == Ptype::KNIGHT)
       return true;
     int dir_x = directions[dir].real();
