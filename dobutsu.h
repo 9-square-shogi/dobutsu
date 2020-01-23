@@ -23,6 +23,13 @@ typedef vector<short> vShort;
 typedef vector<int> vInt;
 // typedef map<uint64,int> sVals;
 
+string const initial_position("-FU-KA-OU"
+                              " .  .  . "
+                              "+OU+HI+FU"
+                              "0000000"
+                              "0000000"
+                              "+");
+
 const int width = 3;
 const int height = 3;
 const int num_squares = width * height;
@@ -268,14 +275,7 @@ struct State {
   /**
    * 初期配置を作る
    */
-  State() {
-    *this = State("-FU-KA-OU"
-                  " .  .  . "
-                  "+OU+HI+FU"
-                  "0000000"
-                  "0000000"
-                  "+");
-  }
+  State() { *this = State(initial_position); }
   /**
    * packした状態からplayerを指定して作る
    */
@@ -402,7 +402,9 @@ struct State {
     if (((1 << dir) & canMoves[ptype - 1]) == 0)
       return false;
 #if JUMPING_OVER_PIECES
-    if (ptype == Ptype::KNIGHT)
+    if (ptype != Ptype::LANCE && ptype != Ptype::BISHOP &&
+        ptype != Ptype::PBISHOP && ptype != Ptype::ROOK &&
+        ptype != Ptype::PROOK)
       return true;
     int dir_x = directions[dir].real();
     int dir_y = directions[dir].imag();
@@ -820,11 +822,13 @@ struct State {
   void applyMove(Move const &move) {
     assert(isValid(move));
     assert(isValidWithGenerate(move));
+#ifndef NDEBUG
     if (!isValid(move) || !isValidWithGenerate(move)) {
       std::cerr << *this << std::endl;
       std::cerr << "invalidMove " << move << std::endl;
       throw InconsistentException();
     }
+#endif
     if (move.from() == STAND) {
       int index =
           (turn == BLACK ? 0 : num_ptypes_in_hand / 2) + move.ptype() - 1;
@@ -878,10 +882,12 @@ struct State {
 #endif
     board[move.to()] = ptype;
     changeTurn();
+#ifndef NDEBUG
     if (!isConsistent()) {
       std::cerr << *this << std::endl;
       throw InconsistentException();
     }
+#endif
   }
   friend ostream &operator<<(ostream &os, State const &s);
   friend bool operator==(State const &s1, State const &s2);
