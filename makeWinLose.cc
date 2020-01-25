@@ -20,44 +20,47 @@ int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint128 v) {
 }
 #if PERPETUAL_CHECK
 bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
-                      /*vChar &isPerpetual,*/
-                      vChar &hasRepetitionDraw, uint128 v, vInt &pastStates) {
+                      vChar &isPerpetual, vChar &hasRepetitionDraw, uint128 v,
+                      vState &pastStates) {
   State s(v);
+  pastStates.push_back(s);
   vUint128 ns = s.nextStates();
   for (size_t j = 0; j < ns.size(); j++) {
-    int i1 = allIS.find(ns[j]);
+    uint128 v1 = ns[j];
+    int i1 = allIS.find(v1);
     if (winLoss[i1] != 0)
       continue;
-    vInt::iterator it = find(pastStates.begin(), pastStates.end(), i1);
+    State s1(v1);
+    vState::iterator it = find(pastStates.begin(), pastStates.end(), s1);
     if (it != pastStates.end()) {
       for (; it < pastStates.end(); it += 2) {
-        if (!State(allIS[*it]).isCheck())
+        if (!State(*it).isCheck())
           return false;
       }
       continue;
     }
-    vInt pastStates1(pastStates);
-    pastStates1.push_back(i1);
-    State s1(allIS[i1]);
+    vState pastStates1(pastStates);
+    pastStates1.push_back(s1.rotateChangeTurn());
     vUint128 ns1 = s1.nextStates();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
-      int i2 = allIS.find(ns1[j1]);
+      uint128 v2 = ns1[j1];
+      int i2 = allIS.find(v2);
       if (winLoss[i2] != 0)
         continue;
-      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/)
+      if (hasRepetitionDraw[i2] == 1 && !isPerpetual[i2])
         continue;
-      vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
+      State s2(v2);
+      vState::iterator it1 = find(pastStates1.begin(), pastStates1.end(), s2);
       if (it1 != pastStates1.end()) {
         for (it1++; it1 < pastStates1.end(); it1 += 2) {
-          if (!State(allIS[*it1]).isCheck())
+          if (!State(*it1).isCheck())
             return false;
         }
         goto HELL;
       }
-      vInt pastStates2(pastStates1);
-      pastStates2.push_back(i2);
-      if (isPerpetualCheck(allIS, winLoss, /*isPerpetual,*/ hasRepetitionDraw,
-                           allIS[i2], pastStates2))
+      vState pastStates2(pastStates1);
+      if (isPerpetualCheck(allIS, winLoss, isPerpetual, hasRepetitionDraw, v2,
+                           pastStates2))
         goto HELL;
       hasRepetitionDraw[i2] = 1;
     }
@@ -69,53 +72,56 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
 
 int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
                              vChar const &winLossCount,
-                             /*vChar const &isPerpetual,*/
+                             vChar const &isPerpetual,
                              vChar const &hasRepetitionDraw, uint128 v,
-                             vInt &pastStates) {
+                             vState &pastStates) {
   State s(v);
+  pastStates.push_back(s);
   vUint128 ns = s.nextStates();
   int maxwlc = -1;
   for (size_t j = 0; j < ns.size(); j++) {
-    int i1 = allIS.find(ns[j]);
+    uint128 v1 = ns[j];
+    int i1 = allIS.find(v1);
     if (winLoss[i1] != 0) {
       if (winLossCount[i1] > maxwlc)
         maxwlc = winLossCount[i1];
       continue;
     }
-    vInt::iterator it = find(pastStates.begin(), pastStates.end(), i1);
+    State s1(allIS[i1]);
+    vState::iterator it = find(pastStates.begin(), pastStates.end(), s1);
     if (it != pastStates.end()) {
       for (; it < pastStates.end(); it += 2) {
-        if (!State(allIS[*it]).isCheck())
+        if (!State(*it).isCheck())
           return numeric_limits<int>::max();
       }
       continue;
     }
-    vInt pastStates1(pastStates);
-    pastStates1.push_back(i1);
-    State s1(allIS[i1]);
+    vState pastStates1(pastStates);
+    pastStates1.push_back(s1.rotateChangeTurn());
     vUint128 ns1 = s1.nextStates();
     int minwlc = numeric_limits<int>::max();
     for (size_t j1 = 0; j1 < ns1.size(); j1++) {
-      int i2 = allIS.find(ns1[j1]);
+      uint128 v2 = ns1[j1];
+      int i2 = allIS.find(v2);
       if (winLoss[i2] != 0)
         continue;
-      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/)
+      if (hasRepetitionDraw[i2] == 1 && !isPerpetual[i2])
         continue;
-      vInt::iterator it1 = find(pastStates1.begin(), pastStates1.end(), i2);
+      State s2(v2);
+      vState::iterator it1 = find(pastStates1.begin(), pastStates1.end(), s2);
       if (it1 != pastStates1.end()) {
         for (it1++; it1 < pastStates1.end(); it1 += 2) {
-          if (!State(allIS[*it1]).isCheck())
+          if (!State(*it1).isCheck())
             goto HELL;
         }
         goto HEAVEN;
       HELL:
         continue;
       }
-      vInt pastStates2(pastStates1);
-      pastStates2.push_back(i2);
-      int wlc = newWinLossCountRecursive(allIS, winLoss, winLossCount,
-                                         /*isPerpetual,*/ hasRepetitionDraw,
-                                         allIS[i2], pastStates2);
+      vState pastStates2(pastStates1);
+      int wlc =
+          newWinLossCountRecursive(allIS, winLoss, winLossCount, isPerpetual,
+                                   hasRepetitionDraw, v2, pastStates2);
       if (wlc < minwlc)
         minwlc = wlc;
     }
@@ -218,10 +224,10 @@ int main() {
   vChar hasRepetitionDraw(dSize, -1);
   for (size_t i = 0; i < dSize; i++) {
     if (winLoss[i] == 0) {
-      vInt pastStates;
-      pastStates.push_back(i);
-      if (isPerpetualCheck(allIS, winLossOld, /*isPerpetual,*/
-                           hasRepetitionDraw, allIS[i], pastStates)) {
+      State s(allIS[i]);
+      vState pastStates;
+      if (isPerpetualCheck(allIS, winLossOld, isPerpetual, hasRepetitionDraw,
+                           allIS[i], pastStates)) {
         isPerpetual[i] = 1;
         winLoss[i] = -1;
         count[0]++;
@@ -234,11 +240,11 @@ int main() {
   }
   for (size_t i = 0; i < dSize; i++) {
     if (isPerpetual[i] == 1) {
-      vInt pastStates;
-      pastStates.push_back(i);
-      winLossCount[i] = newWinLossCountRecursive(
-          allIS, winLossOld, winLossCount, /*isPerpetual,*/
-          hasRepetitionDraw, allIS[i], pastStates);
+      State s(allIS[i]);
+      vState pastStates;
+      winLossCount[i] =
+          newWinLossCountRecursive(allIS, winLossOld, winLossCount, isPerpetual,
+                                   hasRepetitionDraw, allIS[i], pastStates);
     }
   }
   for (int c = 1;; c++) {
@@ -265,33 +271,18 @@ int main() {
     if (changed == false)
       break;
   }
-  vChar isInconsistent(dSize, 0);
   for (int c = 1;; c++) {
     std::cout << "iteration " << c << std::endl;
     bool changed = false;
     for (size_t i = 0; i < dSize; i++) {
-      if (isInconsistent[i])
-        continue;
+      State s(allIS[i]);
       if (isPerpetual[i] == 1) {
-        vInt pastStates;
-        pastStates.push_back(i);
+        vState pastStates;
         int wlc = newWinLossCountRecursive(allIS, winLossOld, winLossCount,
-                                           /*isPerpetual,*/ hasRepetitionDraw,
+                                           isPerpetual, hasRepetitionDraw,
                                            allIS[i], pastStates);
         if (wlc != winLossCount[i]) {
           winLossCount[i] = wlc;
-          changed = true;
-        }
-        int wlc1 =
-            newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
-        if (wlc > wlc1) {
-          /*
-          std::cout << "------------------" << std::endl;
-          std::cout << State(allIS[i]) << std::endl;
-          std::cout << wlc << " > " << wlc1 << std::endl;
-          */
-          winLossCount[i] = wlc1;
-          isInconsistent[i] = 1;
           changed = true;
         }
       } else if (winLoss[i] != 0) {
@@ -299,7 +290,6 @@ int main() {
         if (winLoss[i] == 2)
           continue;
 #endif
-        State s(allIS[i]);
         if ((winLoss[i] == 1 && s.isWin()) || (winLoss[i] == -1 && s.isLose()))
           continue;
         int wlc =
@@ -313,7 +303,6 @@ int main() {
     if (changed == false)
       break;
   }
-/*
   for (size_t i = 0; i < dSize; i++) {
     if (winLoss[i] != 0) {
 #if STALEMATE_DRAW
@@ -336,7 +325,6 @@ int main() {
       std::cout << (int)isPerpetual[i] << std::endl;
     }
   }
-*/
 #endif
 #if STALEMATE_DRAW
   for (size_t i = 0; i < dSize; i++)

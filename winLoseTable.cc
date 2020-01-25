@@ -81,14 +81,16 @@ int WinLoseTable::getWinLose(State const &s, Move const &move, int &wlc) const {
 }
 
 void WinLoseTable::showSequence(State const &s, int current_wlc) const {
+#ifndef NDEBUG
   if (!s.isConsistent())
     throw InconsistentException();
+#endif
   uint128 v = s.normalize();
   int index = allS.find(v);
   if (current_wlc == -1)
     current_wlc = getWinLoseCount(index);
   if (current_wlc == 0 && getWinLose(index) == 0) {
-    vInt pastStates;
+    vState pastStates;
     showDrawSequence(s, pastStates);
     return;
   }
@@ -159,17 +161,16 @@ void WinLoseTable::showSequence(State const &s, int current_wlc) const {
   }
 }
 
-void WinLoseTable::showDrawSequence(State const &s, vInt &pastStates) const {
+void WinLoseTable::showDrawSequence(State const &s, vState &pastStates) const {
   uint128 v = s.normalize();
   int index = allS.find(v);
   std::cerr << "------------------" << std::endl;
   std::cerr << s << std::endl;
   std::cerr << (int)(s.turn == BLACK ? getWinLose(index) : -getWinLose(index))
             << "(" << (int)getWinLoseCount(index) << ")" << std::endl;
-  if (std::find(pastStates.begin(), pastStates.end(), index) !=
-      pastStates.end())
+  if (std::find(pastStates.begin(), pastStates.end(), s) != pastStates.end())
     return;
-  pastStates.push_back(index);
+  pastStates.push_back(s);
   vMove moves = s.nextMoves();
   int draw_index = -1;
   int draw_wl = -1;

@@ -23,9 +23,9 @@ typedef vector<short> vShort;
 typedef vector<int> vInt;
 // typedef map<uint64,int> sVals;
 
-string const initial_position("-FU-KA-OU"
+string const initial_position(" .  . -OU"
                               " .  .  . "
-                              "+OU+HI+FU"
+                              "+OU .  . "
                               "0000000"
                               "0000000"
                               "+");
@@ -489,6 +489,7 @@ struct State {
     return true;
   }
 #endif
+#ifndef NDEBUG
   /**
    * 駒の数があっていることを確認する
    */
@@ -521,7 +522,7 @@ struct State {
 #if DROP_RULE
     if (counts[Ptype::PAWN] >= 0 && stands[0] >= 0 &&
         stands[num_ptypes_in_hand / 2] >= 0 &&
-        counts[Ptype::PAWN] + stands[0] + stands[num_ptypes_in_hand / 2] != 2)
+        counts[Ptype::PAWN] + stands[0] + stands[num_ptypes_in_hand / 2] != 0)
       return false;
     if (counts[Ptype::LANCE] >= 0 && stands[1] >= 0 &&
         stands[1 + num_ptypes_in_hand / 2] >= 0 &&
@@ -549,16 +550,17 @@ struct State {
         stands[5 + num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::BISHOP] + stands[5] +
                 stands[5 + num_ptypes_in_hand / 2] !=
-            1)
+            0)
       return false;
     if (counts[Ptype::ROOK] >= 0 && stands[6] >= 0 &&
         stands[6 + num_ptypes_in_hand / 2] >= 0 &&
         counts[Ptype::ROOK] + stands[6] + stands[6 + num_ptypes_in_hand / 2] !=
-            1)
+            0)
       return false;
 #endif
     return true;
   }
+#endif
 #if 0
   /**
    *
@@ -894,4 +896,5 @@ struct State {
 };
 bool operator==(State const &s1, State const &s2);
 bool operator!=(State const &s1, State const &s2);
+typedef vector<State> vState;
 #endif

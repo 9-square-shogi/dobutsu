@@ -1,4 +1,4 @@
-all : makeAllState makeWinLose checkState checkcsa findDropBaby findZugZwang longestWin maxbf makeCheckmate checkCheckState
+all : makeAllState makeWinLose longestWin # checkState checkcsa findDropBaby findZugZwang maxbf makeCheckmate checkCheckState
 CXX = g++
 # CXX = g++-4 -m64
 # CXXFLAGS = -Wno-deprecated -O0 -g
