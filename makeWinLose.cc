@@ -74,7 +74,7 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
       if (winLoss[i2] != 0)
         continue;
       State s2(v2);
-      if (hasRepetitionDraw[i2] == 1 && !isPerpetual[i2]) {
+      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/) {
 #if PC_DEBUG
         std::cout << "------------------" << std::endl;
         std::cout << s2 << std::endl;
@@ -220,7 +220,7 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
       if (winLoss[i2] != 0)
         continue;
       State s2(v2);
-      if (hasRepetitionDraw[i2] == 1 && !isPerpetual[i2]) {
+      if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/) {
 #if WLC_DEBUG
         std::cout << "------------------" << std::endl;
         std::cout << s2 << std::endl;
@@ -444,10 +444,13 @@ int main() {
     if (changed == false)
       break;
   }
+  vChar isInconsistent(dSize, 0);
   for (int c = 1;; c++) {
     std::cout << "iteration " << c << std::endl;
     bool changed = false;
     for (size_t i = 0; i < dSize; i++) {
+      if (isInconsistent[i])
+        continue;
       State s(allIS[i]);
       if (isPerpetual[i] == 1) {
         vState pastStates;
@@ -456,6 +459,18 @@ int main() {
                                            allIS[i], pastStates);
         if (wlc != winLossCount[i]) {
           winLossCount[i] = wlc;
+          changed = true;
+        }
+        int wlc1 =
+            newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
+        if (wlc > wlc1) {
+
+          std::cout << "------------------" << std::endl;
+          std::cout << State(allIS[i]) << std::endl;
+          std::cout << wlc << " > " << wlc1 << std::endl;
+
+          winLossCount[i] = wlc1;
+          isInconsistent[i] = 1;
           changed = true;
         }
       } else if (winLoss[i] != 0) {
