@@ -93,3 +93,6 @@ testAll : testAll.o dobutsu.o
 
 clean:
 	-rm *.o
+
+distclean:
+	-find . -maxdepth 1 -type f \( -perm +111 -o -name '*.o' -o -name '*.dat' \) -delete
