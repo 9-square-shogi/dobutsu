@@ -19,15 +19,14 @@ int newWinLoss(AllStateTable const &allIS, vChar const &winLoss, uint128 v) {
     return 0;
 }
 #if PERPETUAL_CHECK
-#define PC_DEBUG 0
 bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
                       vChar &isPerpetual, vChar &hasRepetitionDraw, uint128 v,
-                      vState &pastStates) {
+                      vState &pastStates, bool debug = false) {
   State s(v);
-#if PC_DEBUG
-  std::cout << "------------------" << std::endl;
-  std::cout << s << std::endl;
-#endif
+  if (debug) {
+    std::cout << "------------------" << std::endl;
+    std::cout << s << std::endl;
+  }
   pastStates.push_back(s);
   vUint128 ns = s.nextStates();
   for (size_t j = 0; j < ns.size(); j++) {
@@ -36,33 +35,33 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
     if (winLoss[i1] != 0)
       continue;
     State s1(v1);
-#if PC_DEBUG
-    std::cout << "------------------" << std::endl;
-    std::cout << s1.rotateChangeTurn() << std::endl;
-#endif
+    if (debug) {
+      std::cout << "------------------" << std::endl;
+      std::cout << s1.rotateChangeTurn() << std::endl;
+    }
     vState::iterator it = find(pastStates.begin(), pastStates.end(), s1);
     if (it != pastStates.end()) {
-#if PC_DEBUG
-      std::cout << "repetition by black" << std::endl;
-#endif
+      if (debug) {
+        std::cout << "repetition by black" << std::endl;
+      }
       for (; it < pastStates.end(); it += 2) {
-#if PC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << State(*it).rotateChangeTurn() << std::endl;
-        std::cout << (State(*it).isCheck() ? "true" : "false") << std::endl;
-#endif
-        if (!State(*it).isCheck()) {
-#if PC_DEBUG
-          std::cout << "return false" << std::endl;
+        if (debug) {
           std::cout << "------------------" << std::endl;
-          std::cout << s << std::endl;
-#endif
+          std::cout << State(*it).rotateChangeTurn() << std::endl;
+          std::cout << (State(*it).isCheck() ? "true" : "false") << std::endl;
+        }
+        if (!State(*it).isCheck()) {
+          if (debug) {
+            std::cout << "return false" << std::endl;
+            std::cout << "------------------" << std::endl;
+            std::cout << s << std::endl;
+          }
           return false;
         }
       }
-#if PC_DEBUG
-      std::cout << "continue" << std::endl;
-#endif
+      if (debug) {
+        std::cout << "continue" << std::endl;
+      }
       continue;
     }
     vState pastStates1(pastStates);
@@ -75,92 +74,92 @@ bool isPerpetualCheck(AllStateTable const &allIS, vChar const &winLoss,
         continue;
       State s2(v2);
       if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/) {
-#if PC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << s2 << std::endl;
-        std::cout << "repetition draw" << std::endl;
-        std::cout << "continue" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "------------------" << std::endl;
+          std::cout << s2 << std::endl;
+          std::cout << "repetition draw" << std::endl;
+          std::cout << "continue" << std::endl;
+        }
         continue;
       }
       vState::iterator it1 = find(pastStates1.begin(), pastStates1.end(), s2);
       if (it1 != pastStates1.end()) {
-#if PC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << s2 << std::endl;
-        std::cout << "repetition by white" << std::endl;
-#endif
-        for (it1++; it1 < pastStates1.end(); it1 += 2) {
-#if PC_DEBUG
+        if (debug) {
           std::cout << "------------------" << std::endl;
-          std::cout << State(*it1) << std::endl;
-          std::cout << (State(*it1).isCheck() ? "true" : "false") << std::endl;
-#endif
+          std::cout << s2 << std::endl;
+          std::cout << "repetition by white" << std::endl;
+        }
+        for (it1++; it1 < pastStates1.end(); it1 += 2) {
+          if (debug) {
+            std::cout << "------------------" << std::endl;
+            std::cout << State(*it1) << std::endl;
+            std::cout << (State(*it1).isCheck() ? "true" : "false")
+                      << std::endl;
+          }
           if (!State(*it1).isCheck()) {
-#if PC_DEBUG
-            std::cout << "goto HEAVEN" << std::endl;
-#endif
+            if (debug) {
+              std::cout << "goto HEAVEN" << std::endl;
+            }
             goto HEAVEN;
           }
         }
-#if PC_DEBUG
-        std::cout << "goto HELL" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "goto HELL" << std::endl;
+        }
         goto HELL;
       HEAVEN:
-#if PC_DEBUG
-        std::cout << "continue" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "continue" << std::endl;
+        }
         continue;
       }
       vState pastStates2(pastStates1);
       if (isPerpetualCheck(allIS, winLoss, isPerpetual, hasRepetitionDraw, v2,
                            pastStates2)) {
-#if PC_DEBUG
-        std::cout << "receive true" << std::endl;
-        std::cout << "------------------" << std::endl;
-        std::cout << s1.rotateChangeTurn() << std::endl;
-        std::cout << "goto HELL" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "receive true" << std::endl;
+          std::cout << "------------------" << std::endl;
+          std::cout << s1.rotateChangeTurn() << std::endl;
+          std::cout << "goto HELL" << std::endl;
+        }
         goto HELL;
       }
-#if PC_DEBUG
-      std::cout << "receive false" << std::endl;
-      std::cout << "------------------" << std::endl;
-      std::cout << s1.rotateChangeTurn() << std::endl;
-      std::cout << "repetition draw flag set" << std::endl;
-      std::cout << "------------------" << std::endl;
-      std::cout << s2 << std::endl;
-#endif
+      if (debug) {
+        std::cout << "receive false" << std::endl;
+        std::cout << "------------------" << std::endl;
+        std::cout << s1.rotateChangeTurn() << std::endl;
+        std::cout << "repetition draw flag set" << std::endl;
+        std::cout << "------------------" << std::endl;
+        std::cout << s2 << std::endl;
+      }
       hasRepetitionDraw[i2] = 1;
     }
-#if PC_DEBUG
-    std::cout << "return false" << std::endl;
-    std::cout << "------------------" << std::endl;
-    std::cout << s << std::endl;
-#endif
+    if (debug) {
+      std::cout << "return false" << std::endl;
+      std::cout << "------------------" << std::endl;
+      std::cout << s << std::endl;
+    }
     return false;
   HELL:;
   }
-#if PC_DEBUG
-  std::cout << "return true" << std::endl;
-  std::cout << "------------------" << std::endl;
-  std::cout << s << std::endl;
-#endif
+  if (debug) {
+    std::cout << "return true" << std::endl;
+    std::cout << "------------------" << std::endl;
+    std::cout << s << std::endl;
+  }
   return true;
 }
 
-#define WLC_DEBUG 0
 int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
                              vChar const &winLossCount,
                              vChar const &isPerpetual,
                              vChar const &hasRepetitionDraw, uint128 v,
-                             vState &pastStates) {
+                             vState &pastStates, bool debug = false) {
   State s(v);
-#if WLC_DEBUG
-  std::cout << "------------------" << std::endl;
-  std::cout << s << std::endl;
-#endif
+  if (debug) {
+    std::cout << "------------------" << std::endl;
+    std::cout << s << std::endl;
+  }
   pastStates.push_back(s);
   vUint128 ns = s.nextStates();
   int maxwlc = -1;
@@ -168,46 +167,46 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
     uint128 v1 = ns[j];
     int i1 = allIS.find(v1);
     if (winLoss[i1] != 0) {
-#if WLC_DEBUG
-      std::cout << (int)winLossCount[i1] << " > " << maxwlc << " ?"
-                << std::endl;
-#endif
+      if (debug) {
+        std::cout << (int)winLossCount[i1] << " > " << maxwlc << " ?"
+                  << std::endl;
+      }
       if (winLossCount[i1] > maxwlc) {
-#if WLC_DEBUG
-        std::cout << "maxwlc = " << (int)winLossCount[i1] << std::endl;
-#endif
+        if (debug) {
+          std::cout << "maxwlc = " << (int)winLossCount[i1] << std::endl;
+        }
         maxwlc = winLossCount[i1];
       }
       continue;
     }
     State s1(v1);
-#if WLC_DEBUG
-    std::cout << "------------------" << std::endl;
-    std::cout << s1.rotateChangeTurn() << std::endl;
-#endif
+    if (debug) {
+      std::cout << "------------------" << std::endl;
+      std::cout << s1.rotateChangeTurn() << std::endl;
+    }
     vState::iterator it = find(pastStates.begin(), pastStates.end(), s1);
     if (it != pastStates.end()) {
-#if WLC_DEBUG
-      std::cout << "repetition by black" << std::endl;
-#endif
+      if (debug) {
+        std::cout << "repetition by black" << std::endl;
+      }
       for (; it < pastStates.end(); it += 2) {
-#if WLC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << State(*it).rotateChangeTurn() << std::endl;
-        std::cout << (State(*it).isCheck() ? "true" : "false") << std::endl;
-#endif
-        if (!State(*it).isCheck()) {
-#if WLC_DEBUG
-          std::cout << "return " << numeric_limits<int>::max() << std::endl;
+        if (debug) {
           std::cout << "------------------" << std::endl;
-          std::cout << s << std::endl;
-#endif
+          std::cout << State(*it).rotateChangeTurn() << std::endl;
+          std::cout << (State(*it).isCheck() ? "true" : "false") << std::endl;
+        }
+        if (!State(*it).isCheck()) {
+          if (debug) {
+            std::cout << "return " << numeric_limits<int>::max() << std::endl;
+            std::cout << "------------------" << std::endl;
+            std::cout << s << std::endl;
+          }
           return numeric_limits<int>::max();
         }
       }
-#if WLC_DEBUG
-      std::cout << "continue" << std::endl;
-#endif
+      if (debug) {
+        std::cout << "continue" << std::endl;
+      }
       continue;
     }
     vState pastStates1(pastStates);
@@ -221,89 +220,90 @@ int newWinLossCountRecursive(AllStateTable const &allIS, vChar const &winLoss,
         continue;
       State s2(v2);
       if (hasRepetitionDraw[i2] == 1 /*&& !isPerpetual[i2]*/) {
-#if WLC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << s2 << std::endl;
-        std::cout << "repetition draw" << std::endl;
-        std::cout << "continue" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "------------------" << std::endl;
+          std::cout << s2 << std::endl;
+          std::cout << "repetition draw" << std::endl;
+          std::cout << "continue" << std::endl;
+        }
         continue;
       }
       vState::iterator it1 = find(pastStates1.begin(), pastStates1.end(), s2);
       if (it1 != pastStates1.end()) {
-#if WLC_DEBUG
-        std::cout << "------------------" << std::endl;
-        std::cout << s2 << std::endl;
-        std::cout << "repetition by white" << std::endl;
-#endif
-        for (it1++; it1 < pastStates1.end(); it1 += 2) {
-#if WLC_DEBUG
+        if (debug) {
           std::cout << "------------------" << std::endl;
-          std::cout << State(*it1) << std::endl;
-          std::cout << (State(*it1).isCheck() ? "true" : "false") << std::endl;
-#endif
+          std::cout << s2 << std::endl;
+          std::cout << "repetition by white" << std::endl;
+        }
+        for (it1++; it1 < pastStates1.end(); it1 += 2) {
+          if (debug) {
+            std::cout << "------------------" << std::endl;
+            std::cout << State(*it1) << std::endl;
+            std::cout << (State(*it1).isCheck() ? "true" : "false")
+                      << std::endl;
+          }
           if (!State(*it1).isCheck()) {
-#if WLC_DEBUG
-            std::cout << "goto HEAVEN" << std::endl;
-#endif
+            if (debug) {
+              std::cout << "goto HEAVEN" << std::endl;
+            }
             goto HEAVEN;
           }
         }
-#if WLC_DEBUG
-        std::cout << "goto HELL" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "goto HELL" << std::endl;
+        }
         goto HELL;
       HEAVEN:
-#if WLC_DEBUG
-        std::cout << "continue" << std::endl;
-#endif
+        if (debug) {
+          std::cout << "continue" << std::endl;
+        }
         continue;
       }
       vState pastStates2(pastStates1);
       int wlc =
           newWinLossCountRecursive(allIS, winLoss, winLossCount, isPerpetual,
                                    hasRepetitionDraw, v2, pastStates2);
-#if WLC_DEBUG
-      std::cout << "receive " << wlc << std::endl;
-      std::cout << "------------------" << std::endl;
-      std::cout << s1.rotateChangeTurn() << std::endl;
-      std::cout << wlc << " < " << minwlc << " ?" << std::endl;
-#endif
+      if (debug) {
+        std::cout << "receive " << wlc << std::endl;
+        std::cout << "------------------" << std::endl;
+        std::cout << s1.rotateChangeTurn() << std::endl;
+        std::cout << wlc << " < " << minwlc << " ?" << std::endl;
+      }
       if (wlc < minwlc) {
-#if WLC_DEBUG
-        std::cout << "minwlc = " << wlc << std::endl;
-#endif
+        if (debug) {
+          std::cout << "minwlc = " << wlc << std::endl;
+        }
         minwlc = wlc;
       }
     }
-#if WLC_DEBUG
-    std::cout << minwlc << " == " << numeric_limits<int>::max() << " ?"
-              << std::endl;
-#endif
+    if (debug) {
+      std::cout << minwlc << " == " << numeric_limits<int>::max() << " ?"
+                << std::endl;
+    }
     if (minwlc == numeric_limits<int>::max()) {
-#if WLC_DEBUG
-      std::cout << "return " << numeric_limits<int>::max() << std::endl;
-      std::cout << "------------------" << std::endl;
-      std::cout << s << std::endl;
-#endif
+      if (debug) {
+        std::cout << "return " << numeric_limits<int>::max() << std::endl;
+        std::cout << "------------------" << std::endl;
+        std::cout << s << std::endl;
+      }
       return numeric_limits<int>::max();
     }
-#if WLC_DEBUG
-    std::cout << minwlc << " + 1 > " << maxwlc << " ?" << std::endl;
-#endif
+    if (debug) {
+      std::cout << minwlc << " + 1 > " << maxwlc << " ?" << std::endl;
+    }
     if (minwlc + 1 > maxwlc) {
-#if WLC_DEBUG
-      std::cout << "maxwlc = " << (minwlc + 1) << std::endl;
-#endif
+      if (debug) {
+        std::cout << "maxwlc = " << (minwlc + 1) << std::endl;
+      }
       maxwlc = minwlc + 1;
     }
   HELL:;
   }
-#if WLC_DEBUG
-  std::cout << "return " << (maxwlc + 1) << std::endl;
-  std::cout << "------------------" << std::endl;
-  std::cout << s << std::endl;
-#endif
+  if (debug) {
+    std::cout << "return " << (maxwlc + 1) << std::endl;
+    std::cout << "------------------" << std::endl;
+    std::cout << s << std::endl;
+  }
   return maxwlc + 1;
 }
 
@@ -397,7 +397,6 @@ int main() {
   vChar hasRepetitionDraw(dSize, -1);
   for (size_t i = 0; i < dSize; i++) {
     if (winLoss[i] == 0) {
-      State s(allIS[i]);
       vState pastStates;
       if (isPerpetualCheck(allIS, winLossOld, isPerpetual, hasRepetitionDraw,
                            allIS[i], pastStates)) {
@@ -413,7 +412,6 @@ int main() {
   }
   for (size_t i = 0; i < dSize; i++) {
     if (isPerpetual[i] == 1) {
-      State s(allIS[i]);
       vState pastStates;
       winLossCount[i] =
           newWinLossCountRecursive(allIS, winLossOld, winLossCount, isPerpetual,
@@ -451,7 +449,6 @@ int main() {
     for (size_t i = 0; i < dSize; i++) {
       if (isInconsistent[i])
         continue;
-      State s(allIS[i]);
       if (isPerpetual[i] == 1) {
         vState pastStates;
         int wlc = newWinLossCountRecursive(allIS, winLossOld, winLossCount,
@@ -464,11 +461,9 @@ int main() {
         int wlc1 =
             newWinLossCount(allIS, winLoss, winLossCount, allIS[i], winLoss[i]);
         if (wlc > wlc1) {
-
           std::cout << "------------------" << std::endl;
           std::cout << State(allIS[i]) << std::endl;
           std::cout << wlc << " > " << wlc1 << std::endl;
-
           winLossCount[i] = wlc1;
           isInconsistent[i] = 1;
           changed = true;
@@ -478,6 +473,7 @@ int main() {
         if (winLoss[i] == 2)
           continue;
 #endif
+        State s(allIS[i]);
         if ((winLoss[i] == 1 && s.isWin()) || (winLoss[i] == -1 && s.isLose()))
           continue;
         int wlc =
@@ -491,6 +487,7 @@ int main() {
     if (changed == false)
       break;
   }
+  /*
   for (size_t i = 0; i < dSize; i++) {
     if (winLoss[i] != 0) {
 #if STALEMATE_DRAW
@@ -513,6 +510,7 @@ int main() {
       std::cout << (int)isPerpetual[i] << std::endl;
     }
   }
+  */
 #endif
 #if STALEMATE_DRAW
   for (size_t i = 0; i < dSize; i++)
